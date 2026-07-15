@@ -1,0 +1,21 @@
+:root {
+  --primary: #0078D4;
+  --primary-foreground: #ffffff;
+  --active-nav-bg: #EFF6FC;
+  --page-background: #F8F9FB;
+  --card: #ffffff;
+  --foreground: #111827;
+  --muted-foreground: #6B7280;
+  --border: #E5E7EB;
+  --ring: #0078D4;
+  --danger: #DC2626;
+}
+
+body {
+  background: var(--page-background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: rgba(0, 120, 212, 0.16);
+}

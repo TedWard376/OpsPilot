@@ -4,15 +4,17 @@ import TopNav from '../components/TopNav'
 
 function MainLayout() {
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen bg-[var(--page-background)] text-[var(--foreground)]">
       <div className="flex min-h-screen">
         <Sidebar />
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <TopNav />
 
-          <main className="flex-1 overflow-auto bg-[radial-gradient(circle_at_top_left,_rgba(14,116,144,0.08),_transparent_40%)] p-6 lg:p-8">
-            <Outlet />
+          <main className="flex-1 overflow-auto bg-[var(--page-background)] p-6 lg:p-8">
+            <div className="mx-auto max-w-7xl">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

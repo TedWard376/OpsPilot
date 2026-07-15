@@ -1,21 +1,20 @@
-import './App.css'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import PlaceholderPage from './pages/SectionPage'
 
 const routes = [
-  { path: '/', title: 'Dashboard', description: 'This is the dashboard placeholder for the OpsPilot shell.' },
-  { path: '/infrastructure', title: 'Infrastructure', description: 'This is the infrastructure placeholder for the OpsPilot shell.' },
-  { path: '/servers', title: 'Servers', description: 'This is the servers placeholder for the OpsPilot shell.' },
-  { path: '/virtual-machines', title: 'Virtual Machines', description: 'This is the virtual machines placeholder for the OpsPilot shell.' },
-  { path: '/storage', title: 'Storage', description: 'This is the storage placeholder for the OpsPilot shell.' },
-  { path: '/networks', title: 'Networks', description: 'This is the networks placeholder for the OpsPilot shell.' },
-  { path: '/alerts', title: 'Alerts', description: 'This is the alerts placeholder for the OpsPilot shell.' },
-  { path: '/incidents', title: 'Incidents', description: 'This is the incidents placeholder for the OpsPilot shell.' },
-  { path: '/documentation', title: 'Documentation', description: 'This is the documentation placeholder for the OpsPilot shell.' },
-  { path: '/reports', title: 'Reports', description: 'This is the reports placeholder for the OpsPilot shell.' },
-  { path: '/ai-assistant', title: 'AI Assistant', description: 'This is the AI assistant placeholder for the OpsPilot shell.' },
-  { path: '/settings', title: 'Settings', description: 'This is the settings placeholder for the OpsPilot shell.' },
+  { path: '/', title: 'Dashboard', description: 'Operational overview for the last 24 hours.', pageId: 'dashboard' },
+  { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
+  { path: '/servers', title: 'Servers', description: 'Fleet health and service posture for all critical servers.', pageId: 'servers' },
+  { path: '/vms', title: 'Virtual Machines', description: 'Capacity and availability for virtualized workloads.', pageId: 'vms' },
+  { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
+  { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
+  { path: '/alerts', title: 'Alerts', description: 'Real-time incident notifications and active response signals.', pageId: 'alerts' },
+  { path: '/incidents', title: 'Incidents', description: 'Detailed incident state for ongoing and recent events.', pageId: 'incidents' },
+  { path: '/docs', title: 'Documentation', description: 'Runbooks and operational guidance for your engineering teams.', pageId: 'docs' },
+  { path: '/reports', title: 'Reports', description: 'Historical reporting and trend summaries for key services.', pageId: 'reports' },
+  { path: '/ai', title: 'AI Assistant', description: 'Operational prompting and AI-driven troubleshooting workflows.', pageId: 'ai' },
+  { path: '/settings', title: 'Settings', description: 'Configuration and workspace preferences for OpsPilot.', pageId: 'settings' },
 ]
 
 function App() {
@@ -23,12 +22,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route index element={<PlaceholderPage title="Dashboard" description="This is the dashboard placeholder for the OpsPilot shell." />} />
+          <Route index element={<PlaceholderPage title="Dashboard" description="Operational overview for the last 24 hours." pageId="dashboard" />} />
           {routes.filter((route) => route.path !== '/').map((route) => (
             <Route
               key={route.path}
               path={route.path}
-              element={<PlaceholderPage title={route.title} description={route.description} />}
+              element={<PlaceholderPage title={route.title} description={route.description} pageId={route.pageId} />}
             />
           ))}
         </Route>

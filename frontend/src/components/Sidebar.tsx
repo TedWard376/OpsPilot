@@ -1,213 +1,171 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  BookOpen,
+  Bot,
+  FileText,
+  HardDrive,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Monitor,
+  Network,
+  Server,
+  Settings,
+} from 'lucide-react'
 
+type PageId = 'dashboard' | 'infrastructure' | 'servers' | 'vms' | 'storage' | 'networks' | 'alerts' | 'incidents' | 'docs' | 'reports' | 'ai' | 'settings'
+
+interface NavItem {
+  id: PageId
+  label: string
+  icon: React.ElementType
+  badge?: number
+}
+
+interface NavGroup {
+  group: string
+  items: NavItem[]
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  { group: '', items: [{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }] },
+  {
+    group: 'INFRASTRUCTURE',
+    items: [
+      { id: 'infrastructure', label: 'Overview', icon: Layers },
+      { id: 'servers', label: 'Servers', icon: Server },
+      { id: 'vms', label: 'Virtual Machines', icon: Monitor },
+      { id: 'storage', label: 'Storage', icon: HardDrive },
+      { id: 'networks', label: 'Networks', icon: Network },
+    ],
+  },
+  {
+    group: 'OPERATIONS',
+    items: [
+      { id: 'alerts', label: 'Alerts', icon: Bell, badge: 3 },
+      { id: 'incidents', label: 'Incidents', icon: AlertTriangle, badge: 2 },
+      { id: 'docs', label: 'Documentation', icon: BookOpen },
+      { id: 'reports', label: 'Reports', icon: FileText },
+    ],
+  },
+  {
+    group: 'WORKSPACE',
+    items: [
+      { id: 'ai', label: 'AI Assistant', icon: Bot },
+      { id: 'settings', label: 'Settings', icon: Settings },
+    ],
+  },
+]
+
+const ROUTE_MAP: Record<PageId, string> = {
+  dashboard: '/',
+  infrastructure: '/infrastructure',
+  servers: '/servers',
+  vms: '/vms',
+  storage: '/storage',
+  networks: '/networks',
+  alerts: '/alerts',
+  incidents: '/incidents',
+  docs: '/docs',
+  reports: '/reports',
+  ai: '/ai',
+  settings: '/settings',
+}
 
 function Sidebar() {
-  return (
-    <aside className="flex h-screen w-72 flex-col border-r border-slate-200 bg-white">
-      <div className="px-4 py-5">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-sm font-semibold text-white shadow-sm">
-            OP
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-900">OpsPilot</p>
-            <p className="text-xs text-slate-500">Incident Intelligence</p>
-          </div>
-        </div>
+  const location = useLocation()
+  const activePage = getActivePage(location.pathname)
 
-        <div className="mb-4">
-          <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-            <span className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                <DashboardIcon />
-              </span>
-              <span>Dashboard</span>
-            </span>
-          </NavLink>
+  return (
+    <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--card)]">
+      <div className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)] text-white">
+            <Activity size={15} />
+          </div>
+          <span className="text-base font-semibold text-[var(--foreground)]">OpsPilot</span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 pb-4">
-        <div className="px-4">
-          <p className="mb-2 mt-2 px-2 text-xs font-semibold uppercase text-slate-400">Infrastructure</p>
-          <nav className="space-y-1">
-            <NavLink to="/infrastructure" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><InfrastructureIcon /></span>
-              Overview
-            </NavLink>
-
-            <NavLink to="/servers" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><ServersIcon /></span>
-              Servers
-            </NavLink>
-
-            <NavLink to="/virtual-machines" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><VmIcon /></span>
-              Virtual Machines
-            </NavLink>
-
-            <NavLink to="/storage" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><StorageIcon /></span>
-              Storage
-            </NavLink>
-
-            <NavLink to="/networks" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><NetworksIcon /></span>
-              Networks
-            </NavLink>
-          </nav>
-
-          <p className="mt-6 mb-2 px-2 text-xs font-semibold uppercase text-slate-400">Operations</p>
-          <nav className="space-y-1">
-            <NavLink to="/alerts" className={({ isActive }) => `flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><AlertsIcon /></span>
-                Alerts
-              </span>
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-xs text-white">3</span>
-            </NavLink>
-
-            <NavLink to="/incidents" className={({ isActive }) => `flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><IncidentsIcon /></span>
-                Incidents
-              </span>
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-xs text-white">2</span>
-            </NavLink>
-
-            <NavLink to="/documentation" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><DocsIcon /></span>
-              Documentation
-            </NavLink>
-
-            <NavLink to="/reports" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium ${isActive ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><ReportsIcon /></span>
-              Reports
-            </NavLink>
-          </nav>
-        </div>
-
-        <div className="mt-6 px-4">
-          <p className="mb-2 px-2 text-xs font-semibold uppercase text-slate-400">Workspace</p>
-          <div className="rounded-2xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-sky-500 text-white flex items-center justify-center">SM</div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">Sarah Martinez</div>
-                <div className="text-xs text-slate-500">Sr. SRE Engineer</div>
-              </div>
-              <div className="text-slate-400">↪</div>
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.group || '__top'} className="mb-4">
+            {group.group && (
+              <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                {group.group}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = activePage === item.id
+                const to = ROUTE_MAP[item.id]
+                return (
+                  <SidebarNavItem key={item.id} item={item} to={to} active={active} />
+                )
+              })}
             </div>
           </div>
+        ))}
+      </nav>
+
+      <div className="shrink-0 border-t border-[var(--border)] p-3">
+        <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-[var(--muted)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-semibold text-white">
+            SM
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-[var(--foreground)]">Sarah Martinez</p>
+            <p className="truncate text-[10px] text-[var(--muted-foreground)]">Sr. SRE Engineer</p>
+          </div>
+          <LogOut size={13} className="shrink-0 text-[var(--muted-foreground)]" />
         </div>
       </div>
     </aside>
   )
 }
 
-function DashboardIcon() {
+function SidebarNavItem({ item, to, active }: { item: NavItem; to: string; active: boolean }) {
+  const Icon = item.icon
+
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-    </svg>
+    <NavLink
+      to={to}
+      className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
+        active ? 'text-[var(--primary)]' : 'text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
+      }`}
+      style={active ? { backgroundColor: 'var(--active-nav-bg)' } : undefined}
+    >
+      <Icon size={15} className={active ? 'text-[var(--primary)]' : 'text-[var(--muted-foreground)]'} />
+      <span className="flex-1 text-left">{item.label}</span>
+      {item.badge !== undefined && (
+        <span className="rounded-full bg-[var(--danger)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+          {item.badge}
+        </span>
+      )}
+    </NavLink>
   )
 }
 
-function InfrastructureIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M4 9h16" />
-      <path d="M9 4v16" />
-    </svg>
-  )
-}
+function getActivePage(pathname: string): PageId {
+  const map: Record<string, PageId> = {
+    '/': 'dashboard',
+    '/infrastructure': 'infrastructure',
+    '/servers': 'servers',
+    '/vms': 'vms',
+    '/storage': 'storage',
+    '/networks': 'networks',
+    '/alerts': 'alerts',
+    '/incidents': 'incidents',
+    '/docs': 'docs',
+    '/reports': 'reports',
+    '/ai': 'ai',
+    '/settings': 'settings',
+  }
 
-function ServersIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M7 8h10" />
-      <path d="M7 12h10" />
-      <path d="M7 16h6" />
-    </svg>
-  )
-}
-
-function VmIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M8 19v2" />
-      <path d="M16 19v2" />
-      <path d="M3 15h18" />
-    </svg>
-  )
-}
-
-function StorageIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 7h16" />
-      <path d="M6 7v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7" />
-      <path d="M9 11h6" />
-    </svg>
-  )
-}
-
-function NetworksIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M3 12h18" />
-      <path d="M12 4a14 14 0 0 1 0 16" />
-      <path d="M12 4a14 14 0 0 0 0 16" />
-    </svg>
-  )
-}
-
-function AlertsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3 4 19h16L12 3Z" />
-      <path d="M12 8v5" />
-      <path d="M12 16h.01" />
-    </svg>
-  )
-}
-
-function IncidentsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 4H6a2 2 0 0 0-2 2v3" />
-      <path d="M14 4h4a2 2 0 0 1 2 2v3" />
-      <path d="M10 20H6a2 2 0 0 1-2-2v-3" />
-      <path d="M14 20h4a2 2 0 0 0 2-2v-3" />
-      <rect x="8" y="8" width="8" height="8" rx="2" />
-    </svg>
-  )
-}
-
-function DocsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 3h8l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-      <path d="M15 3v4h4" />
-    </svg>
-  )
-}
-
-function ReportsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 19V9" />
-      <path d="M12 19V5" />
-      <path d="M19 19v-7" />
-    </svg>
-  )
+  return map[pathname] ?? 'dashboard'
 }
 
 export default Sidebar
