@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
+import Dashboard from './pages/Dashboard'
 import PlaceholderPage from './pages/SectionPage'
 
 const routes = [
@@ -22,7 +23,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route index element={<PlaceholderPage title="Dashboard" description="Operational overview for the last 24 hours." pageId="dashboard" />} />
+          <Route index element={<Dashboard />} />
           {routes.filter((route) => route.path !== '/').map((route) => (
             <Route
               key={route.path}
