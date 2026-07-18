@@ -2,11 +2,11 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import Dashboard from './pages/Dashboard'
 import PlaceholderPage from './pages/SectionPage'
+import ServersPage from './pages/Servers'
+import ServerDetailPage from './pages/ServerDetail'
 
-const routes = [
-  { path: '/', title: 'Dashboard', description: 'Operational overview for the last 24 hours.', pageId: 'dashboard' },
+const placeholderRoutes = [
   { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
-  { path: '/servers', title: 'Servers', description: 'Fleet health and service posture for all critical servers.', pageId: 'servers' },
   { path: '/vms', title: 'Virtual Machines', description: 'Capacity and availability for virtualized workloads.', pageId: 'vms' },
   { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
   { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
@@ -24,7 +24,9 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route index element={<Dashboard />} />
-          {routes.filter((route) => route.path !== '/').map((route) => (
+          <Route path="/servers" element={<ServersPage />} />
+          <Route path="/servers/:id" element={<ServerDetailPage />} />
+          {placeholderRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}
