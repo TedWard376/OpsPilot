@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard'
 import PlaceholderPage from './pages/SectionPage'
 import ServersPage from './pages/Servers'
 import ServerDetailPage from './pages/ServerDetail'
+import AlertDetailPage from './pages/AlertDetail'
+import IncidentDetailPage from './pages/IncidentDetail'
 
 const placeholderRoutes = [
   { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
@@ -26,6 +28,8 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="/servers" element={<ServersPage />} />
           <Route path="/servers/:id" element={<ServerDetailPage />} />
+          <Route path="/alerts/:id" element={<AlertDetailPage />} />
+          <Route path="/incidents/:id" element={<IncidentDetailPage />} />
           {placeholderRoutes.map((route) => (
             <Route
               key={route.path}

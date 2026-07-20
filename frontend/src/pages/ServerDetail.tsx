@@ -1,20 +1,16 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { ResourceProgressBar } from '../components/servers/ResourceProgressBar'
-import { ServerHealthIndicator } from '../components/servers/ServerHealthIndicator'
-import { ServerStatusBadge } from '../components/servers/ServerStatusBadge'
 import { getServerById } from '../data/servers'
-
-function DetailField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--muted-foreground)]">
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm font-medium text-[var(--foreground)]">{value}</dd>
-    </div>
-  )
-}
+import { getServerDetail } from '../data/serverDetail'
+import { ServerDetailHeader } from '../components/servers/detail/ServerDetailHeader'
+import { HealthSummarySection } from '../components/servers/detail/HealthSummarySection'
+import { PerformanceSection } from '../components/servers/detail/PerformanceSection'
+import { RunningServicesTable } from '../components/servers/detail/RunningServicesTable'
+import { ServerAlertsPanel } from '../components/servers/detail/ServerAlertsPanel'
+import { ServerIncidentsPanel } from '../components/servers/detail/ServerIncidentsPanel'
+import { AIInvestigationPanel } from '../components/servers/detail/AIInvestigationPanel'
+import { ConfigurationSection } from '../components/servers/detail/ConfigurationSection'
+import { ActivityTimeline } from '../components/servers/detail/ActivityTimeline'
 
 function ServerDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -42,8 +38,12 @@ function ServerDetailPage() {
     )
   }
 
+  // Single call composes every mock dataset this page needs. In production this
+  // becomes something like `useServerDetail(id)` backed by `GET /api/servers/{id}/detail`.
+  const detail = getServerDetail(server)
+
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-5 pb-6">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
         <Link to="/" className="transition-colors hover:text-[var(--foreground)]">
           Dashboard
@@ -60,59 +60,38 @@ function ServerDetailPage() {
         <span className="font-medium text-[var(--foreground)]">{server.hostname}</span>
       </nav>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-3">
-          <ServerHealthIndicator status={server.status} size="md" />
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-              {server.hostname}
-            </h1>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              {server.service} · {server.environment} · {server.location}
-            </p>
-          </div>
-        </div>
-        <ServerStatusBadge status={server.status} />
+      <ServerDetailHeader
+        server={server}
+        uptime={detail.uptime}
+        assignedTeam={detail.assignedTeam}
+        onViewLogs={() => navigate(`/servers/${server.id}?tab=logs`)}
+        onOpenIncident={() => navigate('/incidents')}
+        onRestart={() => {
+          /* Placeholder — will call the restart action endpoint once available. */
+        }}
+        onInvestigate={() => {
+          document.getElementById('ai-investigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }}
+      />
+
+      <HealthSummarySection server={server} summary={detail.healthSummary} />
+
+      <PerformanceSection performance={detail.performance} />
+
+      <RunningServicesTable services={detail.services} />
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <ServerAlertsPanel alerts={detail.alerts} onAlertClick={(alert) => navigate(`/alerts/${alert.id}`)} />
+        <ServerIncidentsPanel incidents={detail.incidents} onIncidentClick={(incident) => navigate(`/incidents/${incident.id}`)} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-[var(--foreground)]">Overview</h2>
-          <dl className="mt-4 grid grid-cols-2 gap-4">
-            <DetailField label="Environment" value={server.environment} />
-            <DetailField label="Operating System" value={server.os} />
-            <DetailField label="IP Address" value={server.ipAddress} />
-            <DetailField label="Location" value={server.location} />
-            <DetailField label="Service" value={server.service} />
-            <DetailField label="Last Seen" value={server.lastSeen} />
-          </dl>
-        </section>
-
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-[var(--foreground)]">Resource Usage</h2>
-          <div className="mt-4 space-y-5">
-            <div>
-              <p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">CPU</p>
-              <ResourceProgressBar value={server.cpu} label="CPU" />
-            </div>
-            <div>
-              <p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">Memory</p>
-              <ResourceProgressBar value={server.memory} label="Memory" />
-            </div>
-            <div>
-              <p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">Disk</p>
-              <ResourceProgressBar value={server.disk} label="Disk" />
-            </div>
-          </div>
-        </section>
+      <div id="ai-investigation">
+        <AIInvestigationPanel investigation={detail.aiInvestigation} />
       </div>
 
-      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-[var(--foreground)]">Related Activity</h2>
-        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          Alerts, metrics, and incident history for this server will appear here once the API is connected.
-        </p>
-      </section>
+      <ConfigurationSection configuration={detail.configuration} />
+
+      <ActivityTimeline events={detail.timeline} />
 
       <button
         type="button"
