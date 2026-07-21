@@ -6,6 +6,7 @@ interface PaginationProps {
   totalItems: number
   pageSize: number
   onPageChange: (page: number) => void
+  itemLabel?: string
 }
 
 export function Pagination({
@@ -14,6 +15,7 @@ export function Pagination({
   totalItems,
   pageSize,
   onPageChange,
+  itemLabel = 'servers',
 }: PaginationProps) {
   if (totalItems === 0) return null
 
@@ -23,7 +25,7 @@ export function Pagination({
   return (
     <div className="flex flex-col gap-3 border-t border-[var(--border)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-[var(--muted-foreground)]">
-        Showing {start}–{end} of {totalItems} servers
+        Showing {start}–{end} of {totalItems} {itemLabel}
       </p>
 
       <div className="flex items-center gap-1">

@@ -6,6 +6,7 @@ import ServersPage from './pages/Servers'
 import ServerDetailPage from './pages/ServerDetail'
 import AlertDetailPage from './pages/AlertDetail'
 import IncidentDetailPage from './pages/IncidentDetail'
+import IncidentsPage from './pages/Incidents'
 
 const placeholderRoutes = [
   { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
@@ -13,7 +14,6 @@ const placeholderRoutes = [
   { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
   { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
   { path: '/alerts', title: 'Alerts', description: 'Real-time incident notifications and active response signals.', pageId: 'alerts' },
-  { path: '/incidents', title: 'Incidents', description: 'Detailed incident state for ongoing and recent events.', pageId: 'incidents' },
   { path: '/docs', title: 'Documentation', description: 'Runbooks and operational guidance for your engineering teams.', pageId: 'docs' },
   { path: '/reports', title: 'Reports', description: 'Historical reporting and trend summaries for key services.', pageId: 'reports' },
   { path: '/ai', title: 'AI Assistant', description: 'Operational prompting and AI-driven troubleshooting workflows.', pageId: 'ai' },
@@ -29,6 +29,7 @@ function App() {
           <Route path="/servers" element={<ServersPage />} />
           <Route path="/servers/:id" element={<ServerDetailPage />} />
           <Route path="/alerts/:id" element={<AlertDetailPage />} />
+          <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />
           {placeholderRoutes.map((route) => (
             <Route
