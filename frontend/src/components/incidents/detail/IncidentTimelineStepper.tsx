@@ -3,13 +3,28 @@ import type { TimelineStage } from '../../../data/incidentDetail'
 
 interface IncidentTimelineStepperProps {
   stages: TimelineStage[]
+  nextStageLabel: string | null
+  onAdvance: () => void
 }
 
-export function IncidentTimelineStepper({ stages }: IncidentTimelineStepperProps) {
+export function IncidentTimelineStepper({ stages, nextStageLabel, onAdvance }: IncidentTimelineStepperProps) {
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-[var(--foreground)]">Timeline</h2>
-      <p className="mt-1 text-sm text-[var(--muted-foreground)]">Incident lifecycle progress</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-[var(--foreground)]">Timeline</h2>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">Incident lifecycle progress</p>
+        </div>
+        {nextStageLabel && (
+          <button
+            type="button"
+            onClick={onAdvance}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"
+          >
+            Mark Complete → {nextStageLabel}
+          </button>
+        )}
+      </div>
 
       <ol className="mt-6 flex flex-col gap-0 sm:flex-row sm:items-start">
         {stages.map((stage, index) => (

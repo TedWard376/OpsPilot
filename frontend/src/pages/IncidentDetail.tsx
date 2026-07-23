@@ -1,9 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getIncidentById } from '../data/incidents'
-import { getIncidentDetail } from '../data/incidentDetail'
-import type { InvestigationNote, ResolutionInfo } from '../data/incidentDetail'
+import { getIncidentById, updateIncident } from '../data/incidents'
+import type { IncidentPriority } from '../data/incidents'
+import {
+  getIncidentDetail,
+  buildTimelineStages,
+  stageIndexForStatus,
+  statusLabelForStage,
+  TIMELINE_LABELS,
+} from '../data/incidentDetail'
+import type { ActivityLogEntry, InvestigationNote, ResolutionInfo } from '../data/incidentDetail'
 import { IncidentDetailHeader } from '../components/incidents/detail/IncidentDetailHeader'
 import { IncidentTimelineStepper } from '../components/incidents/detail/IncidentTimelineStepper'
 import { RecentMetricsSection } from '../components/incidents/detail/RecentMetricsSection'
@@ -13,6 +20,10 @@ import { InvestigationNotesPanel } from '../components/incidents/detail/Investig
 import { AIInvestigationPanel } from '../components/servers/detail/AIInvestigationPanel'
 import { ActivityLogPanel } from '../components/incidents/detail/ActivityLogPanel'
 import { ResolutionSection } from '../components/incidents/detail/ResolutionSection'
+import { ReassignModal } from '../components/incidents/detail/ReassignModal'
+import { EscalateModal } from '../components/incidents/detail/EscalateModal'
+
+const LAST_STAGE_INDEX = TIMELINE_LABELS.length - 1
 
 function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -24,10 +35,16 @@ function IncidentDetailPage() {
   // `GET /api/incidents/{id}/detail`.
   const detail = useMemo(() => (incident ? getIncidentDetail(incident) : undefined), [incident])
 
+  const [priority, setPriority] = useState<IncidentPriority | undefined>(incident?.priority)
+  const [assignedEngineer, setAssignedEngineer] = useState(incident?.assignedEngineer ?? '')
+  const [stageIndex, setStageIndex] = useState(incident ? stageIndexForStatus(incident.status) : 0)
   const [notes, setNotes] = useState<InvestigationNote[]>(detail?.notes ?? [])
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(detail?.activityLog ?? [])
   const [resolution, setResolution] = useState<ResolutionInfo | undefined>(detail?.resolution)
+  const [reassignOpen, setReassignOpen] = useState(false)
+  const [escalateOpen, setEscalateOpen] = useState(false)
 
-  if (!incident || !detail || !resolution) {
+  if (!incident || !detail || !priority || !resolution) {
     return (
       <div className="space-y-4 pb-6">
         <button
@@ -49,28 +66,63 @@ function IncidentDetailPage() {
   }
 
   const primaryServerHostname = detail.affectedServers[0]?.server.hostname ?? incident.affectedSystems[0]
+  const canResolve = stageIndex === LAST_STAGE_INDEX && !resolution.isResolved
+  const nextStageLabel = !resolution.isResolved && stageIndex < LAST_STAGE_INDEX ? TIMELINE_LABELS[stageIndex + 1] : null
+
+  const liveTimeline = buildTimelineStages(stageIndex, resolution.isResolved, {
+    created: incident.createdAt,
+    updated: incident.updatedAt,
+  })
+  const liveStatus = statusLabelForStage(stageIndex, resolution.isResolved)
+
+  function logActivity(entry: Omit<ActivityLogEntry, 'id'>) {
+    setActivityLog((prev) => [...prev, { ...entry, id: `${incident!.id}-log-${prev.length + 1}` }])
+  }
 
   function handleAddNote(content: string) {
     setNotes((prev) => [
       ...prev,
-      {
-        id: `${incident!.id}-note-${prev.length + 1}`,
-        author: incident!.assignedEngineer,
-        timestamp: 'Just now',
-        content,
-      },
+      { id: `${incident!.id}-note-${prev.length + 1}`, author: incident!.assignedEngineer, timestamp: 'Just now', content },
     ])
   }
 
+  function handleReassign(newEngineer: string) {
+    const previous = assignedEngineer
+    setAssignedEngineer(newEngineer)
+    updateIncident(incident!.id, { assignedEngineer: newEngineer, updatedAt: 'Just now' })
+    logActivity({ type: 'assignment', actor: 'You', action: `Reassigned this incident from ${previous} to ${newEngineer}.`, timestamp: 'Just now' })
+    setReassignOpen(false)
+  }
+
+  function handleEscalate(newPriority: IncidentPriority) {
+    const previous = priority
+    setPriority(newPriority)
+    updateIncident(incident!.id, { priority: newPriority, updatedAt: 'Just now' })
+    logActivity({ type: 'status', actor: 'You', action: `Changed priority from ${previous} to ${newPriority}.`, timestamp: 'Just now' })
+    setEscalateOpen(false)
+  }
+
+  function handleAdvanceStage() {
+    if (stageIndex >= LAST_STAGE_INDEX) return
+    const next = stageIndex + 1
+    setStageIndex(next)
+    const newStatus = statusLabelForStage(next, false)
+    updateIncident(incident!.id, { status: newStatus, updatedAt: 'Just now' })
+    logActivity({ type: 'status', actor: 'You', action: `Marked "${TIMELINE_LABELS[stageIndex]}" complete — advanced to "${TIMELINE_LABELS[next]}".`, timestamp: 'Just now' })
+  }
+
   function handleMarkResolved() {
-    setResolution((prev) => ({
+    if (!canResolve) return
+    const resolved: ResolutionInfo = {
       isResolved: true,
-      rootCause: prev?.rootCause || `Root cause analysis for ${primaryServerHostname} — see investigation notes for detail.`,
-      resolutionSummary:
-        prev?.resolutionSummary || `Marked resolved by ${incident!.assignedEngineer}. Metrics confirmed back to baseline.`,
+      rootCause: resolution!.rootCause || `Root cause analysis for ${primaryServerHostname} — see investigation notes for detail.`,
+      resolutionSummary: resolution!.resolutionSummary || `Marked resolved by ${incident!.assignedEngineer}. Metrics confirmed back to baseline.`,
       resolvedBy: incident!.assignedEngineer,
       resolvedAt: 'Just now',
-    }))
+    }
+    setResolution(resolved)
+    updateIncident(incident!.id, { status: 'Resolved', updatedAt: 'Just now' })
+    logActivity({ type: 'status', actor: incident!.assignedEngineer, action: 'Marked incident as Resolved.', timestamp: 'Just now' })
   }
 
   return (
@@ -88,14 +140,17 @@ function IncidentDetailPage() {
       </nav>
 
       <IncidentDetailHeader
-        incident={incident}
+        incident={{ ...incident, priority, assignedEngineer, status: liveStatus }}
         isResolved={resolution.isResolved}
+        canResolve={canResolve}
         onAddNote={() => document.getElementById('investigation-notes')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
         onInvestigate={() => document.getElementById('ai-investigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
         onResolve={handleMarkResolved}
+        onReassign={() => setReassignOpen(true)}
+        onEscalate={() => setEscalateOpen(true)}
       />
 
-      <IncidentTimelineStepper stages={detail.timeline} />
+      <IncidentTimelineStepper stages={liveTimeline} nextStageLabel={nextStageLabel} onAdvance={handleAdvanceStage} />
 
       <RecentMetricsSection metrics={detail.metrics} primaryServerHostname={primaryServerHostname} />
 
@@ -110,9 +165,9 @@ function IncidentDetailPage() {
         <AIInvestigationPanel investigation={detail.aiInvestigation} />
       </div>
 
-      <ActivityLogPanel entries={detail.activityLog} />
+      <ActivityLogPanel entries={activityLog} />
 
-      <ResolutionSection resolution={resolution} onMarkResolved={handleMarkResolved} />
+      <ResolutionSection resolution={resolution} canResolve={canResolve} onMarkResolved={handleMarkResolved} />
 
       <button
         type="button"
@@ -122,6 +177,11 @@ function IncidentDetailPage() {
         <ArrowLeft size={16} />
         Back to Incidents
       </button>
+
+      {reassignOpen && (
+        <ReassignModal currentEngineer={assignedEngineer} onClose={() => setReassignOpen(false)} onConfirm={handleReassign} />
+      )}
+      {escalateOpen && <EscalateModal currentPriority={priority} onClose={() => setEscalateOpen(false)} onConfirm={handleEscalate} />}
     </div>
   )
 }

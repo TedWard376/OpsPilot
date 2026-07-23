@@ -289,4 +289,58 @@ export function getIncidentById(id: string): IncidentItem | undefined {
   return incidentsData.find((incident) => incident.id === id)
 }
 
+/** Generates the next sequential incident ID, e.g. INC-2042. */
+function generateIncidentId(): string {
+  const highest = incidentsData.reduce((max, incident) => {
+    const num = Number(incident.id.replace('INC-', ''))
+    return Number.isFinite(num) && num > max ? num : max
+  }, 0)
+  return `INC-${highest + 1}`
+}
+
+export interface NewIncidentInput {
+  title: string
+  priority: IncidentPriority
+  assignedEngineer: string
+  affectedSystems: string[]
+}
+
+/**
+ * Creates a new incident and adds it to the in-memory dataset.
+ * In production this becomes `POST /api/incidents`. Since `incidentsData`
+ * is a module-level singleton, the new incident is visible from any page
+ * that reads it for the rest of the session, without a real backend.
+ */
+export function addIncident(input: NewIncidentInput): IncidentItem {
+  const now = new Date()
+  const nowLabel = 'Just now'
+
+  const incident: IncidentItem = {
+    id: generateIncidentId(),
+    title: input.title,
+    priority: input.priority,
+    status: 'Open',
+    assignedEngineer: input.assignedEngineer,
+    createdAt: nowLabel,
+    createdAtISO: now.toISOString(),
+    updatedAt: nowLabel,
+    duration: '0m',
+    affectedSystems: input.affectedSystems,
+  }
+
+  incidentsData.unshift(incident)
+  return incident
+}
+
+/**
+ * Patches an existing incident in place (reassignment, escalation, status
+ * changes). In production this becomes `PATCH /api/incidents/{id}`.
+ */
+export function updateIncident(id: string, patch: Partial<IncidentItem>): IncidentItem | undefined {
+  const incident = getIncidentById(id)
+  if (!incident) return undefined
+  Object.assign(incident, patch)
+  return incident
+}
+
 export default incidentsData

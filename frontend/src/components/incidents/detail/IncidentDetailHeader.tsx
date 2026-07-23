@@ -9,10 +9,22 @@ interface IncidentDetailHeaderProps {
   onAddNote: () => void
   onInvestigate: () => void
   onResolve: () => void
+  onReassign: () => void
+  onEscalate: () => void
   isResolved: boolean
+  canResolve: boolean
 }
 
-export function IncidentDetailHeader({ incident, onAddNote, onInvestigate, onResolve, isResolved }: IncidentDetailHeaderProps) {
+export function IncidentDetailHeader({
+  incident,
+  onAddNote,
+  onInvestigate,
+  onResolve,
+  onReassign,
+  onEscalate,
+  isResolved,
+  canResolve,
+}: IncidentDetailHeaderProps) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -37,6 +49,7 @@ export function IncidentDetailHeader({ incident, onAddNote, onInvestigate, onRes
           </button>
           <button
             type="button"
+            onClick={onReassign}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"
           >
             <UserPlus size={14} />
@@ -44,6 +57,7 @@ export function IncidentDetailHeader({ incident, onAddNote, onInvestigate, onRes
           </button>
           <button
             type="button"
+            onClick={onEscalate}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"
           >
             <Share2 size={14} />
@@ -52,7 +66,8 @@ export function IncidentDetailHeader({ incident, onAddNote, onInvestigate, onRes
           <button
             type="button"
             onClick={onResolve}
-            disabled={isResolved}
+            disabled={!canResolve}
+            title={!isResolved && !canResolve ? 'Complete every timeline stage before resolving' : undefined}
             className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShieldCheck size={14} />

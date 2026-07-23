@@ -157,9 +157,9 @@ function pickAffectedServers(incident: IncidentItem, seed: number): AffectedServ
 // Timeline
 // ---------------------------------------------------------------------------
 
-const TIMELINE_LABELS = ['Detected', 'Acknowledged', 'Investigating', 'Monitoring', 'Resolved'] as const
+export const TIMELINE_LABELS = ['Detected', 'Acknowledged', 'Investigating', 'Monitoring', 'Resolved'] as const
 
-function stageIndexForStatus(status: IncidentStatus): number {
+export function stageIndexForStatus(status: IncidentStatus): number {
   switch (status) {
     case 'Open':
       return 1
@@ -175,14 +175,45 @@ function stageIndexForStatus(status: IncidentStatus): number {
   }
 }
 
-function buildTimeline(incident: IncidentItem): TimelineStage[] {
-  const currentIndex = stageIndexForStatus(incident.status)
+/**
+ * Pure, stage-index-driven timeline builder. Used both to seed the initial
+ * mock bundle and to re-render the timeline live as the user advances
+ * stages or resolves the incident on the detail page.
+ */
+export function buildTimelineStages(
+  stageIndex: number,
+  isResolved: boolean,
+  timestamps: { created: string; updated: string },
+): TimelineStage[] {
+  const lastIndex = TIMELINE_LABELS.length - 1
 
   return TIMELINE_LABELS.map((label, index) => {
-    const state: TimelineStageState = index < currentIndex ? 'complete' : index === currentIndex ? 'current' : 'pending'
-    const timestamp = index === 0 ? incident.createdAt : index === currentIndex ? incident.updatedAt : state === 'complete' ? incident.updatedAt : null
+    let state: TimelineStageState
+    if (index < stageIndex || (index === lastIndex && isResolved)) {
+      state = 'complete'
+    } else if (index === stageIndex) {
+      state = 'current'
+    } else {
+      state = 'pending'
+    }
+
+    const timestamp = index === 0 ? timestamps.created : state !== 'pending' ? timestamps.updated : null
     return { id: label.toLowerCase(), label, state, timestamp }
   })
+}
+
+function buildTimeline(incident: IncidentItem): TimelineStage[] {
+  const currentIndex = stageIndexForStatus(incident.status)
+  const isResolved = incident.status === 'Resolved' || incident.status === 'Closed'
+  return buildTimelineStages(currentIndex, isResolved, { created: incident.createdAt, updated: incident.updatedAt })
+}
+
+/** Inverse of stageIndexForStatus — used to keep the status badge in sync as the user advances the live timeline. */
+export function statusLabelForStage(stageIndex: number, isResolved: boolean): IncidentStatus {
+  if (isResolved) return 'Resolved'
+  if (stageIndex <= 1) return 'Open'
+  if (stageIndex === 2) return 'Investigating'
+  return 'Monitoring'
 }
 
 // ---------------------------------------------------------------------------

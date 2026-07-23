@@ -5,6 +5,7 @@ interface IncidentPageHeaderProps {
   totalCount: number
   openCount: number
   criticalCount: number
+  onCreateClick: () => void
 }
 
 function StatChip({ label, value, icon: Icon, tone }: { label: string; value: number; icon: LucideIcon; tone: string }) {
@@ -21,7 +22,7 @@ function StatChip({ label, value, icon: Icon, tone }: { label: string; value: nu
   )
 }
 
-export function IncidentPageHeader({ totalCount, openCount, criticalCount }: IncidentPageHeaderProps) {
+export function IncidentPageHeader({ totalCount, openCount, criticalCount, onCreateClick }: IncidentPageHeaderProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -32,6 +33,7 @@ export function IncidentPageHeader({ totalCount, openCount, criticalCount }: Inc
 
         <button
           type="button"
+          onClick={onCreateClick}
           className="inline-flex items-center gap-1.5 self-start rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           <Plus size={16} />
