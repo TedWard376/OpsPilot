@@ -8,9 +8,15 @@ interface ModalProps {
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
+  width?: 'md' | 'lg'
 }
 
-export function Modal({ title, description, onClose, children, footer }: ModalProps) {
+const widthClass: Record<'md' | 'lg', string> = {
+  md: 'max-w-md',
+  lg: 'max-w-2xl',
+}
+
+export function Modal({ title, description, onClose, children, footer, width = 'md' }: ModalProps) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
@@ -26,9 +32,9 @@ export function Modal({ title, description, onClose, children, footer }: ModalPr
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-lg"
+        className={`flex max-h-[85vh] w-full flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-lg ${widthClass[width]}`}
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex shrink-0 items-start justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-[var(--foreground)]">{title}</h2>
             {description && <p className="mt-1 text-sm text-[var(--muted-foreground)]">{description}</p>}
@@ -43,9 +49,9 @@ export function Modal({ title, description, onClose, children, footer }: ModalPr
           </button>
         </div>
 
-        <div className="mt-4">{children}</div>
+        <div className="mt-4 min-h-0 flex-1 overflow-y-auto">{children}</div>
 
-        {footer && <div className="mt-5 flex justify-end gap-2 border-t border-[var(--border)] pt-4">{footer}</div>}
+        {footer && <div className="mt-5 flex shrink-0 justify-end gap-2 border-t border-[var(--border)] pt-4">{footer}</div>}
       </div>
     </div>
   )

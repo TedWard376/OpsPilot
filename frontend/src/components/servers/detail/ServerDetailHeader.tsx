@@ -1,4 +1,4 @@
-import { FileText, PlayCircle, RotateCw, Sparkles } from 'lucide-react'
+import { FileText, PlayCircle, Sparkles } from 'lucide-react'
 import type { ServerItem } from '../../../data/servers'
 import { ServerHealthIndicator } from '../ServerHealthIndicator'
 import { ServerStatusBadge } from '../ServerStatusBadge'
@@ -10,19 +10,10 @@ interface ServerDetailHeaderProps {
   assignedTeam: string
   onViewLogs: () => void
   onOpenIncident: () => void
-  onRestart: () => void
   onInvestigate: () => void
 }
 
-export function ServerDetailHeader({
-  server,
-  uptime,
-  assignedTeam,
-  onViewLogs,
-  onOpenIncident,
-  onRestart,
-  onInvestigate,
-}: ServerDetailHeaderProps) {
+export function ServerDetailHeader({ server, uptime, assignedTeam, onViewLogs, onOpenIncident, onInvestigate }: ServerDetailHeaderProps) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -55,14 +46,6 @@ export function ServerDetailHeader({
           >
             <PlayCircle size={14} />
             Open Incident
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"
-          >
-            <RotateCw size={14} />
-            Restart
           </button>
           <button
             type="button"

@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Search } from 'lucide-react'
 import { Modal } from '../Modal'
 import type { IncidentPriority, NewIncidentInput } from '../../data/incidents'
-import { incidentAffectedSystems, incidentEngineers } from '../../data/incidents'
+import { incidentEngineers } from '../../data/incidents'
+import { serversData } from '../../data/servers'
+import { ServerHealthIndicator } from '../servers/ServerHealthIndicator'
 
 interface CreateIncidentModalProps {
   onClose: () => void
   onCreate: (input: NewIncidentInput) => void
+  initialServerIds?: string[]
 }
 
 const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
@@ -14,15 +18,27 @@ const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
 const fieldClassName =
   'w-full rounded-lg border border-[var(--border)] bg-[var(--page-background)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20'
 
-export function CreateIncidentModal({ onClose, onCreate }: CreateIncidentModalProps) {
+export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [] }: CreateIncidentModalProps) {
   const [title, setTitle] = useState('')
   const [priority, setPriority] = useState<IncidentPriority>('Medium')
   const [assignedEngineer, setAssignedEngineer] = useState<string>(incidentEngineers[0])
-  const [affectedSystems, setAffectedSystems] = useState<string[]>([])
+  const [affectedServerIds, setAffectedServerIds] = useState<string[]>(initialServerIds)
+  const [serverQuery, setServerQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  function toggleSystem(system: string) {
-    setAffectedSystems((prev) => (prev.includes(system) ? prev.filter((s) => s !== system) : [...prev, system]))
+  const filteredServers = useMemo(() => {
+    const q = serverQuery.trim().toLowerCase()
+    if (q === '') return serversData
+    return serversData.filter(
+      (server) =>
+        server.hostname.toLowerCase().includes(q) ||
+        server.service.toLowerCase().includes(q) ||
+        server.environment.toLowerCase().includes(q),
+    )
+  }, [serverQuery])
+
+  function toggleServer(id: string) {
+    setAffectedServerIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]))
   }
 
   function handleSubmit(e: FormEvent) {
@@ -32,16 +48,16 @@ export function CreateIncidentModal({ onClose, onCreate }: CreateIncidentModalPr
       setError('Give the incident a title.')
       return
     }
-    if (affectedSystems.length === 0) {
-      setError('Select at least one affected system.')
+    if (affectedServerIds.length === 0) {
+      setError('Select at least one affected server.')
       return
     }
 
-    onCreate({ title: title.trim(), priority, assignedEngineer, affectedSystems })
+    onCreate({ title: title.trim(), priority, assignedEngineer, affectedServerIds })
   }
 
   return (
-    <Modal title="Create Incident" description="Manually log a new incident for investigation." onClose={onClose}>
+    <Modal title="Create Incident" description="Manually log a new incident for investigation." onClose={onClose} width="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="incident-title" className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
@@ -52,7 +68,7 @@ export function CreateIncidentModal({ onClose, onCreate }: CreateIncidentModalPr
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Elevated error rate on API Gateway"
+            placeholder="e.g. Elevated error rate on prod-api-01"
             className={`mt-1.5 ${fieldClassName}`}
           />
         </div>
@@ -96,22 +112,47 @@ export function CreateIncidentModal({ onClose, onCreate }: CreateIncidentModalPr
         </div>
 
         <div>
-          <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">Affected Systems</span>
-          <div className="mt-1.5 grid max-h-40 grid-cols-2 gap-1.5 overflow-y-auto rounded-lg border border-[var(--border)] p-2">
-            {incidentAffectedSystems.map((system) => (
-              <label
-                key={system}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"
-              >
-                <input
-                  type="checkbox"
-                  checked={affectedSystems.includes(system)}
-                  onChange={() => toggleSystem(system)}
-                  className="accent-[var(--primary)]"
-                />
-                {system}
-              </label>
-            ))}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">Affected Servers</span>
+            {affectedServerIds.length > 0 && (
+              <span className="text-xs text-[var(--muted-foreground)]">{affectedServerIds.length} selected</span>
+            )}
+          </div>
+
+          <div className="relative mt-1.5">
+            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
+            <input
+              type="text"
+              value={serverQuery}
+              onChange={(e) => setServerQuery(e.target.value)}
+              placeholder="Search by hostname, service, or environment…"
+              className={`${fieldClassName} pl-8`}
+            />
+          </div>
+
+          <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-[var(--border)]">
+            {filteredServers.length === 0 ? (
+              <p className="px-3 py-6 text-center text-sm text-[var(--muted-foreground)]">No servers match your search.</p>
+            ) : (
+              filteredServers.map((server) => (
+                <label
+                  key={server.id}
+                  className="flex cursor-pointer items-center gap-2.5 border-b border-[var(--border)] px-3 py-2 text-sm last:border-b-0 hover:bg-[var(--page-background)]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={affectedServerIds.includes(server.id)}
+                    onChange={() => toggleServer(server.id)}
+                    className="accent-[var(--primary)]"
+                  />
+                  <ServerHealthIndicator status={server.status} />
+                  <span className="font-medium text-[var(--foreground)]">{server.hostname}</span>
+                  <span className="text-xs text-[var(--muted-foreground)]">
+                    {server.service} · {server.environment}
+                  </span>
+                </label>
+              ))
+            )}
           </div>
         </div>
 

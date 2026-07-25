@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { IncidentFilters } from '../components/incidents/IncidentFilters'
 import { IncidentPageHeader } from '../components/incidents/IncidentPageHeader'
 import { IncidentTable } from '../components/incidents/IncidentTable'
@@ -8,8 +8,13 @@ import incidentsData, { addIncident } from '../data/incidents'
 import type { NewIncidentInput } from '../data/incidents'
 import { useIncidentList } from '../hooks/useIncidentList'
 
+interface LocationState {
+  prefillServerId?: string
+}
+
 function IncidentsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   // Local, refreshable view over the module-level incidentsData array —
   // re-created (new array reference) after a create/update so the list
@@ -17,6 +22,19 @@ function IncidentsPage() {
   // hook (e.g. useQuery) instead of reading a static import.
   const [incidents, setIncidents] = useState(incidentsData)
   const [createOpen, setCreateOpen] = useState(false)
+  const [prefillServerIds, setPrefillServerIds] = useState<string[]>([])
+
+  // Deep-link from a server's "Open Incident" button: arrive here with the
+  // server already selected and the Create Incident form open.
+  useEffect(() => {
+    const state = location.state as LocationState | null
+    if (state?.prefillServerId) {
+      setPrefillServerIds([state.prefillServerId])
+      setCreateOpen(true)
+      navigate(location.pathname, { replace: true, state: null })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
     searchQuery,
@@ -46,6 +64,11 @@ function IncidentsPage() {
     setIncidents([...incidentsData])
     setCreateOpen(false)
     navigate(`/incidents/${created.id}`)
+  }
+
+  function handleCloseCreate() {
+    setCreateOpen(false)
+    setPrefillServerIds([])
   }
 
   return (
@@ -81,7 +104,9 @@ function IncidentsPage() {
         }
       />
 
-      {createOpen && <CreateIncidentModal onClose={() => setCreateOpen(false)} onCreate={handleCreateIncident} />}
+      {createOpen && (
+        <CreateIncidentModal onClose={handleCloseCreate} onCreate={handleCreateIncident} initialServerIds={prefillServerIds} />
+      )}
     </div>
   )
 }

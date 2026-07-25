@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { ServerItem } from '../../data/servers'
 import { Pagination } from '../Pagination'
@@ -110,14 +109,6 @@ export function ServerPageHeader({ filteredCount, totalCount }: ServerPageHeader
           {filteredCount} of {totalCount} servers
         </p>
       </div>
-
-      <button
-        type="button"
-        className="inline-flex items-center gap-1.5 self-start rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-      >
-        <Plus size={16} />
-        Add Server
-      </button>
     </div>
   )
 }

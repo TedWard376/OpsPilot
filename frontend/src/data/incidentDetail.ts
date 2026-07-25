@@ -125,20 +125,32 @@ function buildSeries(seed: number, current: number, amplitude: number, min: numb
 // ---------------------------------------------------------------------------
 
 const SYSTEM_TO_SERVICE: Record<string, string[]> = {
-  'API Gateway': ['API', 'Web'],
+  'API Gateway': ['API'],
   'Database Cluster': ['Database'],
   'Cache Layer': ['Cache'],
-  'Message Queue': ['Worker'],
+  'Worker Pool': ['Worker'],
   'Auth Service': ['Auth'],
   'Object Storage': ['Object Storage'],
-  'Load Balancer': ['Web'],
   'Storage Pool': ['File Storage'],
   'Kubernetes Cluster': ['Kubernetes'],
-  'DNS Service': ['Monitoring'],
-  Network: ['Web', 'API'],
+  'Monitoring Stack': ['Monitoring'],
+  'Web Tier': ['Web'],
 }
 
 function pickAffectedServers(incident: IncidentItem, seed: number): AffectedServerRef[] {
+  // Primary path: incidents now carry explicit server references from
+  // the Create Incident form (or curated seed data).
+  if (incident.affectedServerIds.length > 0) {
+    const chosen = incident.affectedServerIds
+      .map((id) => serversData.find((server) => server.id === id))
+      .filter((server): server is ServerItem => Boolean(server))
+
+    if (chosen.length > 0) {
+      return chosen.map((server, i) => ({ server, role: i === 0 ? 'Primary' : 'Secondary' }))
+    }
+  }
+
+  // Fallback heuristic for incidents without explicit server references.
   const wantedServices = new Set(incident.affectedSystems.flatMap((system) => SYSTEM_TO_SERVICE[system] ?? []))
   const candidates = serversData.filter((server) => wantedServices.has(server.service))
   const pool = candidates.length > 0 ? candidates : serversData
