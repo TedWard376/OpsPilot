@@ -152,7 +152,7 @@ function buildSeries(seed: number, current: number, amplitude: number, min: numb
 // Service stacks per workload type
 // ---------------------------------------------------------------------------
 
-const SERVICE_STACKS: Record<string, { name: string; port: number; baseCpu: number; baseMem: number }[]> = {
+export const SERVICE_STACKS: Record<string, { name: string; port: number; baseCpu: number; baseMem: number }[]> = {
   Web: [
     { name: 'nginx', port: 443, baseCpu: 18, baseMem: 22 },
     { name: 'IIS', port: 80, baseCpu: 14, baseMem: 26 },

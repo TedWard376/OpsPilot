@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { getServerById } from '../data/servers'
 import { getServerDetail } from '../data/serverDetail'
+import { getServerLogs } from '../data/serverLogs'
 import { ServerDetailHeader } from '../components/servers/detail/ServerDetailHeader'
 import { HealthSummarySection } from '../components/servers/detail/HealthSummarySection'
 import { PerformanceSection } from '../components/servers/detail/PerformanceSection'
@@ -11,11 +13,14 @@ import { ServerIncidentsPanel } from '../components/servers/detail/ServerInciden
 import { AIInvestigationPanel } from '../components/servers/detail/AIInvestigationPanel'
 import { ConfigurationSection } from '../components/servers/detail/ConfigurationSection'
 import { ActivityTimeline } from '../components/servers/detail/ActivityTimeline'
+import { LogsModal } from '../components/servers/detail/LogsModal'
 
 function ServerDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const server = id ? getServerById(id) : undefined
+
+  const [logsOpen, setLogsOpen] = useState(false)
 
   if (!server) {
     return (
@@ -64,11 +69,8 @@ function ServerDetailPage() {
         server={server}
         uptime={detail.uptime}
         assignedTeam={detail.assignedTeam}
-        onViewLogs={() => navigate(`/servers/${server.id}?tab=logs`)}
-        onOpenIncident={() => navigate('/incidents')}
-        onRestart={() => {
-          /* Placeholder — will call the restart action endpoint once available. */
-        }}
+        onViewLogs={() => setLogsOpen(true)}
+        onOpenIncident={() => navigate('/incidents', { state: { prefillServerId: server.id } })}
         onInvestigate={() => {
           document.getElementById('ai-investigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }}
@@ -101,6 +103,8 @@ function ServerDetailPage() {
         <ArrowLeft size={16} />
         Back to Servers
       </button>
+
+      {logsOpen && <LogsModal hostname={server.hostname} logs={getServerLogs(server)} onClose={() => setLogsOpen(false)} />}
     </div>
   )
 }
