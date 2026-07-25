@@ -5,6 +5,7 @@ import PlaceholderPage from './pages/SectionPage'
 import ServersPage from './pages/Servers'
 import ServerDetailPage from './pages/ServerDetail'
 import AlertDetailPage from './pages/AlertDetail'
+import AlertsPage from './pages/Alerts'
 import IncidentDetailPage from './pages/IncidentDetail'
 import IncidentsPage from './pages/Incidents'
 
@@ -13,7 +14,6 @@ const placeholderRoutes = [
   { path: '/vms', title: 'Virtual Machines', description: 'Capacity and availability for virtualized workloads.', pageId: 'vms' },
   { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
   { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
-  { path: '/alerts', title: 'Alerts', description: 'Real-time incident notifications and active response signals.', pageId: 'alerts' },
   { path: '/docs', title: 'Documentation', description: 'Runbooks and operational guidance for your engineering teams.', pageId: 'docs' },
   { path: '/reports', title: 'Reports', description: 'Historical reporting and trend summaries for key services.', pageId: 'reports' },
   { path: '/ai', title: 'AI Assistant', description: 'Operational prompting and AI-driven troubleshooting workflows.', pageId: 'ai' },
@@ -28,6 +28,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="/servers" element={<ServersPage />} />
           <Route path="/servers/:id" element={<ServerDetailPage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/alerts/:id" element={<AlertDetailPage />} />
           <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />
