@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock, ShieldCheck } from 'lucide-react'
-import type { ResolutionInfo } from '../../../data/incidentDetail'
+import type { ResolutionInfo } from '../../../types/incidentDetail'
 
 interface ResolutionSectionProps {
   resolution: ResolutionInfo

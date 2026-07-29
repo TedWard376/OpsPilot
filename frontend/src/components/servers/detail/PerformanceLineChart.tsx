@@ -1,5 +1,5 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { TimeSeriesPoint } from '../../../data/serverDetail'
+import type { TimeSeriesPoint } from '../../../types/chart'
 
 interface PerformanceLineChartProps {
   data: TimeSeriesPoint[]

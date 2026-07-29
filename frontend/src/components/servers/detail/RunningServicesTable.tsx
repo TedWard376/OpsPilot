@@ -1,4 +1,4 @@
-import type { RunningServiceItem, ServiceStatus } from '../../../data/serverDetail'
+import type { RunningServiceItem, ServiceStatus } from '../../../types/serverDetail'
 
 interface RunningServicesTableProps {
   services: RunningServiceItem[]

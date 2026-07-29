@@ -1,4 +1,4 @@
-import type { AlertStatus } from '../../data/alerts'
+import type { AlertStatus } from '../../types/alert'
 
 interface AlertStatusBadgeProps {
   status: AlertStatus

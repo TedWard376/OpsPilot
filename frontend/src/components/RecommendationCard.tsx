@@ -1,4 +1,4 @@
-import type { RecommendationData } from '../data/dashboard'
+import type { RecommendationData } from '../types/dashboard'
 import { ArrowRight, Zap, Lock, TrendingUp } from 'lucide-react'
 
 /**

@@ -1,32 +1,14 @@
 /**
- * Mock data for the Alerts page.
- * In production this file's exports are replaced by FastAPI calls
- * (e.g. `GET /api/alerts`, `GET /api/alerts/{id}`), while every component
- * keeps consuming the same `AlertItem` shape.
+ * Mock alert content — pure content, plus the seed-construction factory
+ * (makeAlert) that builds it from real server records. See
+ * services/alertService.ts for the access functions (getAllAlerts,
+ * getAlertById, getAlertSources).
  */
 
 import { serversData } from './servers'
-import type { ServerEnvironment } from './servers'
+import type { AlertItem, AlertSeverity, AlertStatus } from '../types/alert'
 
-export type AlertSeverity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational'
-
-export type AlertStatus = 'Open' | 'Acknowledged' | 'Investigating' | 'Resolved'
-
-export interface AlertItem {
-  id: string
-  name: string
-  severity: AlertSeverity
-  status: AlertStatus
-  source: string
-  affectedServerId: string
-  affectedServerHostname: string
-  environment: ServerEnvironment
-  triggerTime: string
-  triggerTimeISO: string
-  duration: string
-}
-
-// Source of truth for filter dropdown options.
+// Source of truth for the "Filter by source" dropdown.
 export const alertSources = ['OpsPilot Monitoring', 'Prometheus', 'Health Check', 'Log Analyzer', 'Network Monitor', 'Backup Service', 'Security Scanner'] as const
 
 function makeAlert(
@@ -82,9 +64,3 @@ export const alertsData: AlertItem[] = [
   makeAlert('ALRT-3002', 'Low Disk Space', 'Informational', 'Resolved', 'OpsPilot Monitoring', 'srv-25', 'Jul 15, 2026 10:00', '2026-07-15T10:00:00Z', '2h 00m'),
   makeAlert('ALRT-3001', 'Scheduled Maintenance Notice', 'Informational', 'Resolved', 'OpsPilot Monitoring', 'srv-21', 'Jul 14, 2026 22:00', '2026-07-14T22:00:00Z', '3h 00m'),
 ]
-
-export function getAlertById(id: string): AlertItem | undefined {
-  return alertsData.find((alert) => alert.id === id)
-}
-
-export default alertsData

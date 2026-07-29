@@ -1,23 +1,11 @@
-export type ServerEnvironment = 'Production' | 'Staging' | 'Development'
+/**
+ * Mock server inventory — pure content, no access logic.
+ * See services/serverService.ts for the functions that read this data
+ * (getAllServers, getServerById); in production those functions call
+ * `GET /api/servers` / `GET /api/servers/{id}` instead of reading this array.
+ */
 
-export type ServerStatus = 'Healthy' | 'Warning' | 'Critical'
-
-export interface ServerItem {
-  id: string
-  hostname: string
-  environment: ServerEnvironment
-  os: string
-  cpu: number
-  memory: number
-  disk: number
-  status: ServerStatus
-  location: string
-  lastSeen: string
-  /** ISO timestamp for sorting — API will provide this in production */
-  lastSeenAt: string
-  ipAddress: string
-  service: string
-}
+import type { ServerItem } from '../types/server'
 
 export const serversData: ServerItem[] = [
   // Production — Web
@@ -59,9 +47,3 @@ export const serversData: ServerItem[] = [
   { id: 'srv-24', hostname: 'dev-db-01', environment: 'Development', os: 'Ubuntu 22.04 LTS', cpu: 10, memory: 20, disk: 35, status: 'Healthy', location: 'West EU', lastSeen: '12m ago', lastSeenAt: '2026-07-13T09:33:00Z', ipAddress: '10.30.1.11', service: 'Database' },
   { id: 'srv-25', hostname: 'dev-app-01', environment: 'Development', os: 'Ubuntu 22.04 LTS', cpu: 12, memory: 24, disk: 18, status: 'Healthy', location: 'West EU', lastSeen: '5m ago', lastSeenAt: '2026-07-13T09:40:00Z', ipAddress: '10.30.2.12', service: 'Web' },
 ]
-
-export function getServerById(id: string): ServerItem | undefined {
-  return serversData.find((server) => server.id === id)
-}
-
-export default serversData

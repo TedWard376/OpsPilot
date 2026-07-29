@@ -1,4 +1,4 @@
-import type { IncidentStatus } from '../../data/incidents'
+import type { IncidentStatus } from '../../types/incident'
 
 interface IncidentStatusBadgeProps {
   status: IncidentStatus

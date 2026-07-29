@@ -1,4 +1,4 @@
-import type { ServerIncidentItem } from '../../../data/serverDetail'
+import type { ServerIncidentItem } from '../../../types/serverDetail'
 import { StatusBadge } from '../../StatusBadge'
 
 interface ServerIncidentsPanelProps {

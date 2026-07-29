@@ -1,4 +1,4 @@
-import type { ServerStatus } from '../../data/servers'
+import type { ServerStatus } from '../../types/server'
 
 interface ServerHealthIndicatorProps {
   status: ServerStatus

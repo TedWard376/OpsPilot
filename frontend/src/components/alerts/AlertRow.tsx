@@ -1,4 +1,4 @@
-import type { AlertItem } from '../../data/alerts'
+import type { AlertItem } from '../../types/alert'
 import { AlertStatusBadge } from './AlertStatusBadge'
 import { SeverityBadge } from './SeverityBadge'
 

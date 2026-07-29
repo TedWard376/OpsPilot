@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import type { TimelineStage } from '../../../data/incidentDetail'
+import type { TimelineStage } from '../../../types/incidentDetail'
 
 interface IncidentTimelineStepperProps {
   stages: TimelineStage[]

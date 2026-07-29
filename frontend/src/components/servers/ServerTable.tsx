@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { ServerItem } from '../../data/servers'
+import type { ServerItem } from '../../types/server'
 import { Pagination } from '../Pagination'
 import { ServerRow } from './ServerRow'
 

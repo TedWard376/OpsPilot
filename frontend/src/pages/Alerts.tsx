@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { AlertFilters } from '../components/alerts/AlertFilters'
 import { AlertsPageHeader } from '../components/alerts/AlertsPageHeader'
 import { AlertTable } from '../components/alerts/AlertTable'
-import alertsData from '../data/alerts'
+import { getAllAlerts } from '../services/alertService'
 import { useAlertList } from '../hooks/useAlertList'
 
 function AlertsPage() {
   const navigate = useNavigate()
+  const alertsData = getAllAlerts()
   const {
     searchQuery,
     severityFilter,

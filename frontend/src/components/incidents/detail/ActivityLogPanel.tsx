@@ -1,6 +1,6 @@
 import { AlertTriangle, MessageCircle, Settings2, UserCog } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ActivityLogEntry, ActivityLogType } from '../../../data/incidentDetail'
+import type { ActivityLogEntry, ActivityLogType } from '../../../types/incidentDetail'
 
 interface ActivityLogPanelProps {
   entries: ActivityLogEntry[]

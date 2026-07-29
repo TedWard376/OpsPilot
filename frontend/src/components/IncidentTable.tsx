@@ -1,4 +1,4 @@
-import type { IncidentData } from '../data/dashboard'
+import type { IncidentData } from '../types/dashboard'
 import { StatusBadge } from './StatusBadge'
 
 /**

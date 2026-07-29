@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, CheckCircle2, History, Loader2, Search, Sparkles } from 'lucide-react'
-import type { AIInvestigationData } from '../../../data/serverDetail'
+import type { AIInvestigationData } from '../../../types/serverDetail'
 
 interface AIInvestigationPanelProps {
   investigation: AIInvestigationData

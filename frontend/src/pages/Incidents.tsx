@@ -4,8 +4,8 @@ import { IncidentFilters } from '../components/incidents/IncidentFilters'
 import { IncidentPageHeader } from '../components/incidents/IncidentPageHeader'
 import { IncidentTable } from '../components/incidents/IncidentTable'
 import { CreateIncidentModal } from '../components/incidents/CreateIncidentModal'
-import incidentsData, { addIncident } from '../data/incidents'
-import type { NewIncidentInput } from '../data/incidents'
+import { addIncident, getAllIncidents } from '../services/incidentService'
+import type { NewIncidentInput } from '../types/incident'
 import { useIncidentList } from '../hooks/useIncidentList'
 
 interface LocationState {
@@ -16,11 +16,11 @@ function IncidentsPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Local, refreshable view over the module-level incidentsData array —
-  // re-created (new array reference) after a create/update so the list
-  // and KPI counts re-render. In production this becomes a data-fetching
-  // hook (e.g. useQuery) instead of reading a static import.
-  const [incidents, setIncidents] = useState(incidentsData)
+  // Local, refreshable view over the incident dataset — re-created (new
+  // array reference) after a create/update so the list and KPI counts
+  // re-render. In production this becomes a data-fetching hook (e.g.
+  // useQuery) instead of an initial getAllIncidents() read.
+  const [incidents, setIncidents] = useState(getAllIncidents())
   const [createOpen, setCreateOpen] = useState(false)
   const [prefillServerIds, setPrefillServerIds] = useState<string[]>([])
 
@@ -61,7 +61,7 @@ function IncidentsPage() {
 
   function handleCreateIncident(input: NewIncidentInput) {
     const created = addIncident(input)
-    setIncidents([...incidentsData])
+    setIncidents([...getAllIncidents()])
     setCreateOpen(false)
     navigate(`/incidents/${created.id}`)
   }

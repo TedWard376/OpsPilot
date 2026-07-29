@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import type { AlertItem, AlertSeverity, AlertStatus } from '../data/alerts'
-import type { ServerEnvironment } from '../data/servers'
+import type { AlertItem, AlertSeverity, AlertStatus } from '../types/alert'
+import type { ServerEnvironment } from '../types/server'
 
 export type AlertSortOption = 'trigger-desc' | 'trigger-asc' | 'severity' | 'duration-desc'
 

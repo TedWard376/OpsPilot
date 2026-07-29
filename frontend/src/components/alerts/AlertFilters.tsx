@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react'
-import type { AlertSeverity, AlertStatus } from '../../data/alerts'
-import { alertSources } from '../../data/alerts'
-import type { ServerEnvironment } from '../../data/servers'
+import type { AlertSeverity, AlertStatus } from '../../types/alert'
+import { getAlertSources } from '../../services/alertService'
+import type { ServerEnvironment } from '../../types/server'
 import type { AlertSortOption } from '../../hooks/useAlertList'
 import { AlertSearch } from './AlertSearch'
 
@@ -114,7 +114,7 @@ export function AlertFilters({
           value={sourceFilter}
           onChange={onSourceChange}
           ariaLabel="Filter by alert source"
-          options={[{ value: 'All', label: 'All sources' }, ...alertSources.map((s) => ({ value: s, label: s }))]}
+          options={[{ value: 'All', label: 'All sources' }, ...getAlertSources().map((s) => ({ value: s, label: s }))]}
         />
 
         <FilterSelect

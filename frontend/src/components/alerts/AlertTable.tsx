@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { AlertItem } from '../../data/alerts'
+import type { AlertItem } from '../../types/alert'
 import { Pagination } from '../Pagination'
 import { AlertRow } from './AlertRow'
 

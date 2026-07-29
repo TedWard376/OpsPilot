@@ -1,5 +1,5 @@
 import { ChartCard } from '../../ChartCard'
-import type { ServerDetailBundle } from '../../../data/serverDetail'
+import type { ServerDetailBundle } from '../../../types/serverDetail'
 import { PerformanceLineChart } from './PerformanceLineChart'
 
 interface PerformanceSectionProps {

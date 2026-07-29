@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react'
-import type { AffectedServerRef } from '../../../data/incidentDetail'
+import type { AffectedServerRef } from '../../../types/incidentDetail'
 import { ServerHealthIndicator } from '../../servers/ServerHealthIndicator'
 
 interface AffectedServersPanelProps {

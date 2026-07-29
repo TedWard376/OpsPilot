@@ -1,4 +1,4 @@
-import type { AlertSeverity } from '../../data/alerts'
+import type { AlertSeverity } from '../../types/alert'
 
 interface SeverityBadgeProps {
   severity: AlertSeverity

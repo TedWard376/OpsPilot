@@ -1,4 +1,4 @@
-import type { IncidentItem } from '../../data/incidents'
+import type { IncidentItem } from '../../types/incident'
 import { IncidentStatusBadge } from './IncidentStatusBadge'
 import { PriorityBadge } from './PriorityBadge'
 

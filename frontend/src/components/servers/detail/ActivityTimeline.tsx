@@ -1,6 +1,6 @@
 import { AlertTriangle, DatabaseBackup, LifeBuoy, RotateCw, TrendingUp, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { TimelineEvent, TimelineEventType } from '../../../data/serverDetail'
+import type { TimelineEvent, TimelineEventType } from '../../../types/serverDetail'
 
 interface ActivityTimelineProps {
   events: TimelineEvent[]

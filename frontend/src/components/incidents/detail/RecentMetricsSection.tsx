@@ -1,6 +1,6 @@
 import { ChartCard } from '../../ChartCard'
 import { PerformanceLineChart } from '../../servers/detail/PerformanceLineChart'
-import type { IncidentDetailBundle } from '../../../data/incidentDetail'
+import type { IncidentDetailBundle } from '../../../types/incidentDetail'
 
 interface RecentMetricsSectionProps {
   metrics: IncidentDetailBundle['metrics']

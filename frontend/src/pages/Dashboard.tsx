@@ -10,13 +10,13 @@ import { SystemStatusPanel } from '../components/SystemStatusPanel'
 import { SimpleLineChart } from '../components/SimpleLineChart'
 import { SimpleBarChart } from '../components/SimpleBarChart'
 import {
-  metricsData,
-  healthChartData,
-  alertsData,
-  incidentsData,
-  recommendationsData,
-  systemStatusData,
-} from '../data/dashboard'
+  getDashboardAlerts,
+  getDashboardHealthChart,
+  getDashboardIncidents,
+  getDashboardMetrics,
+  getDashboardRecommendations,
+  getDashboardSystemStatus,
+} from '../services/dashboardService'
 
 const incidentTrendData = [
   { day: 'Mon', critical: 1, high: 1, medium: 0 },
@@ -30,6 +30,12 @@ const incidentTrendData = [
 
 function Dashboard() {
   const navigate = useNavigate()
+  const metricsData = getDashboardMetrics()
+  const healthChartData = getDashboardHealthChart()
+  const alertsData = getDashboardAlerts()
+  const incidentsData = getDashboardIncidents()
+  const recommendationsData = getDashboardRecommendations()
+  const systemStatusData = getDashboardSystemStatus()
 
   return (
     <div className="space-y-4 pb-4">

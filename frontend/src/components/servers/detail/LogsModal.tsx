@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Modal } from '../../Modal'
-import type { LogEntry, LogLevel } from '../../../data/serverLogs'
+import type { LogEntry, LogLevel } from '../../../types/serverLogs'
 
 interface LogsModalProps {
   hostname: string
