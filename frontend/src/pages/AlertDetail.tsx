@@ -1,14 +1,143 @@
-import { useParams } from 'react-router-dom'
-import PlaceholderPage from './SectionPage'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ChevronRight } from 'lucide-react'
+import { getAlertById, updateAlert } from '../services/alertService'
+import { getServerById } from '../services/serverService'
+import { getAlertDetail } from '../services/alertDetailService'
+import { addIncident } from '../services/incidentService'
+import type { NewIncidentInput } from '../types/incident'
+import { AlertDetailHeader } from '../components/alerts/detail/AlertDetailHeader'
+import { AlertHealthSummarySection } from '../components/alerts/detail/AlertHealthSummarySection'
+import { AffectedResourcePanel } from '../components/alerts/detail/AffectedResourcePanel'
+import { AlertMetricGraphsSection } from '../components/alerts/detail/AlertMetricGraphsSection'
+import { AlertTimeline } from '../components/alerts/detail/AlertTimeline'
+import { RelatedIncidentsPanel } from '../components/alerts/detail/RelatedIncidentsPanel'
+import { RelatedDocumentationPanel } from '../components/alerts/detail/RelatedDocumentationPanel'
+import { AlertAIInvestigationPanel } from '../components/alerts/detail/AlertAIInvestigationPanel'
+import { AssignEngineerModal } from '../components/alerts/detail/AssignEngineerModal'
+import { CreateIncidentModal } from '../components/incidents/CreateIncidentModal'
 
 function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const alert = id ? getAlertById(id) : undefined
+  const server = alert ? getServerById(alert.affectedServerId) : undefined
+
+  // Single call composes every mock dataset this page needs. In production
+  // this becomes something like `useAlertDetail(id)` backed by
+  // `GET /api/alerts/{id}/detail`.
+  const detail = useMemo(() => (alert ? getAlertDetail(alert, server) : undefined), [alert, server])
+
+  const [status, setStatus] = useState(alert?.status)
+  const [assignedEngineer, setAssignedEngineer] = useState<string | null>(detail?.acknowledgedBy ?? null)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [createIncidentOpen, setCreateIncidentOpen] = useState(false)
+
+  if (!alert || !detail || !status) {
+    return (
+      <div className="space-y-4 pb-6">
+        <button
+          type="button"
+          onClick={() => navigate('/alerts')}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--primary)] hover:underline"
+        >
+          <ArrowLeft size={16} />
+          Back to Alerts
+        </button>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+          <h1 className="text-lg font-semibold text-[var(--foreground)]">Alert not found</h1>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+            The alert you are looking for does not exist or has been removed.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const isAcknowledged = status !== 'Open'
+  const canAcknowledge = status === 'Open'
+
+  function handleAcknowledge() {
+    if (!canAcknowledge) return
+    setStatus('Acknowledged')
+    updateAlert(alert!.id, { status: 'Acknowledged' })
+    setAssignedEngineer((prev) => prev ?? 'You')
+  }
+
+  function handleAssignEngineer(engineer: string) {
+    setAssignedEngineer(engineer)
+    setAssignOpen(false)
+  }
+
+  function handleCreateIncident(input: NewIncidentInput) {
+    const created = addIncident(input)
+    setCreateIncidentOpen(false)
+    navigate(`/incidents/${created.id}`)
+  }
+
   return (
-    <PlaceholderPage
-      title={`Alert ${id ?? ''}`}
-      description="Full alert detail — timeline, affected resource, and investigation history — will render here once this route is built out."
-      pageId="alerts"
-    />
+    <div className="space-y-5 pb-6">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
+        <Link to="/" className="transition-colors hover:text-[var(--foreground)]">
+          Dashboard
+        </Link>
+        <ChevronRight size={14} aria-hidden />
+        <Link to="/alerts" className="transition-colors hover:text-[var(--foreground)]">
+          Alerts
+        </Link>
+        <ChevronRight size={14} aria-hidden />
+        <span className="font-medium text-[var(--foreground)]">{alert.id}</span>
+      </nav>
+
+      <AlertDetailHeader
+        alert={{ ...alert, status }}
+        assignedEngineer={assignedEngineer}
+        canAcknowledge={canAcknowledge}
+        isAcknowledged={isAcknowledged}
+        onAcknowledge={handleAcknowledge}
+        onCreateIncident={() => setCreateIncidentOpen(true)}
+        onAssignEngineer={() => setAssignOpen(true)}
+        onInvestigate={() => document.getElementById('ai-investigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      />
+
+      <AlertHealthSummarySection summary={detail.healthSummary} />
+
+      <AffectedResourcePanel resource={detail.affectedResource} />
+
+      <AlertTimeline events={detail.timeline} />
+
+      <AlertMetricGraphsSection metrics={detail.metrics} />
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <RelatedIncidentsPanel incidents={detail.relatedIncidents} onIncidentClick={(incident) => navigate(`/incidents/${incident.id}`)} />
+        <RelatedDocumentationPanel docs={detail.relatedDocs} />
+      </div>
+
+      <AlertAIInvestigationPanel investigation={detail.aiInvestigation} />
+
+      <button
+        type="button"
+        onClick={() => navigate('/alerts')}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--primary)] hover:underline"
+      >
+        <ArrowLeft size={16} />
+        Back to Alerts
+      </button>
+
+      {assignOpen && (
+        <AssignEngineerModal currentEngineer={assignedEngineer} onClose={() => setAssignOpen(false)} onConfirm={handleAssignEngineer} />
+      )}
+
+      {createIncidentOpen && (
+        <CreateIncidentModal
+          onClose={() => setCreateIncidentOpen(false)}
+          onCreate={handleCreateIncident}
+          initialServerIds={[alert.affectedServerId]}
+          initialTitle={`${alert.name} on ${alert.affectedServerHostname}`}
+          initialPriority={alert.severity === 'Informational' ? 'Low' : alert.severity}
+        />
+      )}
+    </div>
   )
 }
 

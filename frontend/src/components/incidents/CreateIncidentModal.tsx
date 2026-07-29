@@ -11,6 +11,8 @@ interface CreateIncidentModalProps {
   onClose: () => void
   onCreate: (input: NewIncidentInput) => void
   initialServerIds?: string[]
+  initialTitle?: string
+  initialPriority?: IncidentPriority
 }
 
 const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
@@ -18,9 +20,9 @@ const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
 const fieldClassName =
   'w-full rounded-lg border border-[var(--border)] bg-[var(--page-background)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20'
 
-export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [] }: CreateIncidentModalProps) {
-  const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState<IncidentPriority>('Medium')
+export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [], initialTitle = '', initialPriority = 'Medium' }: CreateIncidentModalProps) {
+  const [title, setTitle] = useState(initialTitle)
+  const [priority, setPriority] = useState<IncidentPriority>(initialPriority)
   const [assignedEngineer, setAssignedEngineer] = useState<string>(getIncidentEngineers()[0])
   const [affectedServerIds, setAffectedServerIds] = useState<string[]>(initialServerIds)
   const [serverQuery, setServerQuery] = useState('')

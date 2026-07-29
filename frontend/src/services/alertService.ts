@@ -19,3 +19,15 @@ export function getAlertById(id: string): AlertItem | undefined {
 export function getAlertSources(): readonly string[] {
   return alertSources
 }
+
+/**
+ * Patches an existing alert in place (acknowledgement, status changes).
+ * In production this becomes `PATCH /api/alerts/{id}`. Mirrors
+ * `updateIncident` in incidentService.ts.
+ */
+export function updateAlert(id: string, patch: Partial<AlertItem>): AlertItem | undefined {
+  const alert = getAlertById(id)
+  if (!alert) return undefined
+  Object.assign(alert, patch)
+  return alert
+}
