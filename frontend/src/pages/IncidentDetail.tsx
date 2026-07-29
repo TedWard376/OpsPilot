@@ -1,16 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getIncidentById, updateIncident } from '../data/incidents'
-import type { IncidentPriority } from '../data/incidents'
-import {
-  getIncidentDetail,
-  buildTimelineStages,
-  stageIndexForStatus,
-  statusLabelForStage,
-  TIMELINE_LABELS,
-} from '../data/incidentDetail'
-import type { ActivityLogEntry, InvestigationNote, ResolutionInfo } from '../data/incidentDetail'
+import { getIncidentById, updateIncident } from '../services/incidentService'
+import type { IncidentPriority } from '../types/incident'
+import { getIncidentDetail, buildTimelineStages, stageIndexForStatus, statusLabelForStage, getTimelineStageLabels } from '../services/incidentDetailService'
+import type { ActivityLogEntry, InvestigationNote, ResolutionInfo } from '../types/incidentDetail'
 import { IncidentDetailHeader } from '../components/incidents/detail/IncidentDetailHeader'
 import { IncidentTimelineStepper } from '../components/incidents/detail/IncidentTimelineStepper'
 import { RecentMetricsSection } from '../components/incidents/detail/RecentMetricsSection'
@@ -23,6 +17,7 @@ import { ResolutionSection } from '../components/incidents/detail/ResolutionSect
 import { ReassignModal } from '../components/incidents/detail/ReassignModal'
 import { EscalateModal } from '../components/incidents/detail/EscalateModal'
 
+const TIMELINE_LABELS = getTimelineStageLabels()
 const LAST_STAGE_INDEX = TIMELINE_LABELS.length - 1
 
 function IncidentDetailPage() {

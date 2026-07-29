@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
-import type { IncidentPriority, IncidentStatus } from '../../data/incidents'
-import { incidentAffectedSystems, incidentEngineers } from '../../data/incidents'
+import type { IncidentPriority, IncidentStatus } from '../../types/incident'
+import { getIncidentAffectedSystems, getIncidentEngineers } from '../../services/incidentService'
 import { IncidentSearch } from './IncidentSearch'
 
 interface IncidentFiltersProps {
@@ -96,14 +96,14 @@ export function IncidentFilters({
           value={engineerFilter}
           onChange={onEngineerChange}
           ariaLabel="Filter by assigned engineer"
-          options={[{ value: 'All', label: 'All engineers' }, ...incidentEngineers.map((e) => ({ value: e, label: e }))]}
+          options={[{ value: 'All', label: 'All engineers' }, ...getIncidentEngineers().map((e) => ({ value: e, label: e }))]}
         />
 
         <FilterSelect
           value={systemFilter}
           onChange={onSystemChange}
           ariaLabel="Filter by affected system"
-          options={[{ value: 'All', label: 'All systems' }, ...incidentAffectedSystems.map((s) => ({ value: s, label: s }))]}
+          options={[{ value: 'All', label: 'All systems' }, ...getIncidentAffectedSystems().map((s) => ({ value: s, label: s }))]}
         />
       </div>
     </div>

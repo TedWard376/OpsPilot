@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Send } from 'lucide-react'
-import type { InvestigationNote } from '../../../data/incidentDetail'
+import type { InvestigationNote } from '../../../types/incidentDetail'
 
 interface InvestigationNotesPanelProps {
   notes: InvestigationNote[]

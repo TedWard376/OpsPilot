@@ -1,4 +1,4 @@
-import type { IncidentPriority } from '../../data/incidents'
+import type { IncidentPriority } from '../../types/incident'
 
 interface PriorityBadgeProps {
   priority: IncidentPriority

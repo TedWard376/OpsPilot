@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal } from '../../Modal'
-import { incidentEngineers } from '../../../data/incidents'
+import { getIncidentEngineers } from '../../../services/incidentService'
 
 interface ReassignModalProps {
   currentEngineer: string
@@ -37,7 +37,7 @@ export function ReassignModal({ currentEngineer, onClose, onConfirm }: ReassignM
       }
     >
       <div className="space-y-2">
-        {incidentEngineers.map((engineer) => (
+        {getIncidentEngineers().map((engineer) => (
           <label
             key={engineer}
             className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] transition-colors hover:bg-[var(--page-background)]"

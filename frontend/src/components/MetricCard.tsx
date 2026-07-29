@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Heart, Activity, AlertTriangle, Zap, Shield, AlertCircle } from 'lucide-react'
-import type { MetricData } from '../data/dashboard'
+import type { MetricData } from '../types/dashboard'
 
 interface MetricCardProps {
   metric: MetricData

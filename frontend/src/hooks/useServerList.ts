@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { ServerItem, ServerEnvironment, ServerStatus } from '../data/servers'
+import type { ServerItem, ServerEnvironment, ServerStatus } from '../types/server'
 import type { ServerSortOption } from '../components/servers/ServerFilters'
 
 const STATUS_ORDER: Record<ServerStatus, number> = {

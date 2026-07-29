@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react'
-import type { RelatedAlertRef } from '../../../data/incidentDetail'
+import type { RelatedAlertRef } from '../../../types/incidentDetail'
 import { StatusBadge } from '../../StatusBadge'
 
 interface RelatedAlertsPanelProps {

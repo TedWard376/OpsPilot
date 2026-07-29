@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal } from '../../Modal'
-import type { IncidentPriority } from '../../../data/incidents'
+import type { IncidentPriority } from '../../../types/incident'
 import { PriorityBadge } from '../PriorityBadge'
 
 interface EscalateModalProps {

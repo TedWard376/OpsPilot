@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react'
-import type { ServerAlertItem } from '../../../data/serverDetail'
+import type { ServerAlertItem } from '../../../types/serverDetail'
 import { StatusBadge } from '../../StatusBadge'
 
 interface ServerAlertsPanelProps {

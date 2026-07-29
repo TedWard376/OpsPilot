@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Search } from 'lucide-react'
 import { Modal } from '../Modal'
-import type { IncidentPriority, NewIncidentInput } from '../../data/incidents'
-import { incidentEngineers } from '../../data/incidents'
-import { serversData } from '../../data/servers'
+import type { IncidentPriority, NewIncidentInput } from '../../types/incident'
+import { getIncidentEngineers } from '../../services/incidentService'
+import { getAllServers } from '../../services/serverService'
 import { ServerHealthIndicator } from '../servers/ServerHealthIndicator'
 
 interface CreateIncidentModalProps {
   onClose: () => void
   onCreate: (input: NewIncidentInput) => void
   initialServerIds?: string[]
+  initialTitle?: string
+  initialPriority?: IncidentPriority
 }
 
 const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
@@ -18,18 +20,19 @@ const PRIORITIES: IncidentPriority[] = ['Critical', 'High', 'Medium', 'Low']
 const fieldClassName =
   'w-full rounded-lg border border-[var(--border)] bg-[var(--page-background)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20'
 
-export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [] }: CreateIncidentModalProps) {
-  const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState<IncidentPriority>('Medium')
-  const [assignedEngineer, setAssignedEngineer] = useState<string>(incidentEngineers[0])
+export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [], initialTitle = '', initialPriority = 'Medium' }: CreateIncidentModalProps) {
+  const [title, setTitle] = useState(initialTitle)
+  const [priority, setPriority] = useState<IncidentPriority>(initialPriority)
+  const [assignedEngineer, setAssignedEngineer] = useState<string>(getIncidentEngineers()[0])
   const [affectedServerIds, setAffectedServerIds] = useState<string[]>(initialServerIds)
   const [serverQuery, setServerQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const filteredServers = useMemo(() => {
+    const allServers = getAllServers()
     const q = serverQuery.trim().toLowerCase()
-    if (q === '') return serversData
-    return serversData.filter(
+    if (q === '') return allServers
+    return allServers.filter(
       (server) =>
         server.hostname.toLowerCase().includes(q) ||
         server.service.toLowerCase().includes(q) ||
@@ -102,7 +105,7 @@ export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [] }
               onChange={(e) => setAssignedEngineer(e.target.value)}
               className={`mt-1.5 ${fieldClassName}`}
             >
-              {incidentEngineers.map((engineer) => (
+              {getIncidentEngineers().map((engineer) => (
                 <option key={engineer} value={engineer}>
                   {engineer}
                 </option>

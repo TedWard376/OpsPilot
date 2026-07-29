@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react'
-import type { ServerItem } from '../../data/servers'
+import type { ServerItem } from '../../types/server'
 import { ResourceProgressBar } from './ResourceProgressBar'
 import { ServerHealthIndicator } from './ServerHealthIndicator'
 import { ServerStatusBadge } from './ServerStatusBadge'

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { IncidentItem } from '../../data/incidents'
+import type { IncidentItem } from '../../types/incident'
 import { Pagination } from '../Pagination'
 import { IncidentRow } from './IncidentRow'
 

@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import type { ServerEnvironment, ServerStatus } from '../../data/servers'
+import type { ServerEnvironment, ServerStatus } from '../../types/server'
 import { SearchBar } from '../SearchBar'
 
 export type ServerSortOption =

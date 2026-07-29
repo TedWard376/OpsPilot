@@ -1,6 +1,6 @@
 import { Activity, AlertCircle, Cpu, Gauge, HardDrive, MemoryStick, Server } from 'lucide-react'
-import type { ServerItem } from '../../../data/servers'
-import type { ServerHealthSummary } from '../../../data/serverDetail'
+import type { ServerItem } from '../../../types/server'
+import type { ServerHealthSummary } from '../../../types/serverDetail'
 import { HealthMetricCard, type HealthMetricTone } from './HealthMetricCard'
 
 interface HealthSummarySectionProps {

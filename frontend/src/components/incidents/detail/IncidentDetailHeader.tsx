@@ -1,5 +1,5 @@
 import { MessageSquarePlus, Share2, ShieldCheck, Sparkles, UserPlus } from 'lucide-react'
-import type { IncidentItem } from '../../../data/incidents'
+import type { IncidentItem } from '../../../types/incident'
 import { DetailField } from '../../servers/detail/DetailField'
 import { IncidentStatusBadge } from '../IncidentStatusBadge'
 import { PriorityBadge } from '../PriorityBadge'

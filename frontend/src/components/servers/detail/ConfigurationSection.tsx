@@ -1,4 +1,4 @@
-import type { ServerConfiguration } from '../../../data/serverDetail'
+import type { ServerConfiguration } from '../../../types/serverDetail'
 import { DetailField } from './DetailField'
 
 interface ConfigurationSectionProps {

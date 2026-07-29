@@ -1,4 +1,4 @@
-import type { HealthDataPoint } from '../data/dashboard'
+import type { HealthDataPoint } from '../types/dashboard'
 import {
   Area,
   AreaChart,

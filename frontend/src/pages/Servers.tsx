@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ServerFilters } from '../components/servers/ServerFilters'
 import { ServerPageHeader, ServerTable } from '../components/servers/ServerTable'
-import serversData from '../data/servers'
+import { getAllServers } from '../services/serverService'
 import { useServerList } from '../hooks/useServerList'
 
 function ServersPage() {
@@ -23,7 +23,7 @@ function ServersPage() {
     handleStatusChange,
     handleSortChange,
     handlePageChange,
-  } = useServerList(serversData)
+  } = useServerList(getAllServers())
 
   return (
     <div className="space-y-6 pb-6">

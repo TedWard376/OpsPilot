@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { IncidentItem, IncidentPriority, IncidentStatus } from '../data/incidents'
+import type { IncidentItem, IncidentPriority, IncidentStatus } from '../types/incident'
 
 const PAGE_SIZE = 10
 
