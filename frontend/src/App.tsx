@@ -8,13 +8,14 @@ import AlertDetailPage from './pages/AlertDetail'
 import AlertsPage from './pages/Alerts'
 import IncidentDetailPage from './pages/IncidentDetail'
 import IncidentsPage from './pages/Incidents'
+import DocumentationPage from './pages/Documentation'
+import DocumentationDetailsPage from './pages/DocumentationDetails'
 
 const placeholderRoutes = [
   { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
   { path: '/vms', title: 'Virtual Machines', description: 'Capacity and availability for virtualized workloads.', pageId: 'vms' },
   { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
   { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
-  { path: '/docs', title: 'Documentation', description: 'Runbooks and operational guidance for your engineering teams.', pageId: 'docs' },
   { path: '/reports', title: 'Reports', description: 'Historical reporting and trend summaries for key services.', pageId: 'reports' },
   { path: '/ai', title: 'AI Assistant', description: 'Operational prompting and AI-driven troubleshooting workflows.', pageId: 'ai' },
   { path: '/settings', title: 'Settings', description: 'Configuration and workspace preferences for OpsPilot.', pageId: 'settings' },
@@ -32,6 +33,8 @@ function App() {
           <Route path="/alerts/:id" element={<AlertDetailPage />} />
           <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />
+          <Route path="/docs" element={<DocumentationPage />} />
+          <Route path="/docs/:id" element={<DocumentationDetailsPage />} />
           {placeholderRoutes.map((route) => (
             <Route
               key={route.path}
