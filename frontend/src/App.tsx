@@ -10,13 +10,13 @@ import IncidentDetailPage from './pages/IncidentDetail'
 import IncidentsPage from './pages/Incidents'
 import DocumentationPage from './pages/Documentation'
 import DocumentationDetailsPage from './pages/DocumentationDetails'
+import Reports from './pages/Reports'
 
 const placeholderRoutes = [
   { path: '/infrastructure', title: 'Infrastructure', description: 'A central view into the systems that keep your platform moving.', pageId: 'infrastructure' },
   { path: '/vms', title: 'Virtual Machines', description: 'Capacity and availability for virtualized workloads.', pageId: 'vms' },
   { path: '/storage', title: 'Storage', description: 'Capacity planning and data resilience for storage pools.', pageId: 'storage' },
   { path: '/networks', title: 'Networks', description: 'Connectivity, latency, and path health across your estate.', pageId: 'networks' },
-  { path: '/reports', title: 'Reports', description: 'Historical reporting and trend summaries for key services.', pageId: 'reports' },
   { path: '/ai', title: 'AI Assistant', description: 'Operational prompting and AI-driven troubleshooting workflows.', pageId: 'ai' },
   { path: '/settings', title: 'Settings', description: 'Configuration and workspace preferences for OpsPilot.', pageId: 'settings' },
 ]
@@ -35,6 +35,7 @@ function App() {
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />
           <Route path="/docs" element={<DocumentationPage />} />
           <Route path="/docs/:id" element={<DocumentationDetailsPage />} />
+          <Route path="/reports" element={<Reports />} />
           {placeholderRoutes.map((route) => (
             <Route
               key={route.path}
