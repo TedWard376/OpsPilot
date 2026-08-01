@@ -7,9 +7,10 @@ interface PerformanceLineChartProps {
   unit: string
   height?: number
   gradientId: string
+  domain?: [number, number]
 }
 
-export function PerformanceLineChart({ data, color, unit, height = 160, gradientId }: PerformanceLineChartProps) {
+export function PerformanceLineChart({ data, color, unit, height = 160, gradientId, domain }: PerformanceLineChartProps) {
   const xTicks = data.filter((_, index) => index % 3 === 0).map((point) => point.time)
 
   return (
@@ -31,7 +32,13 @@ export function PerformanceLineChart({ data, color, unit, height = 160, gradient
             tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
             padding={{ left: 8, right: 8 }}
           />
-          <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} width={28} />
+          <YAxis
+            domain={domain}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+            width={38}
+          />
           <Tooltip
             cursor={{ stroke: 'var(--border)', strokeDasharray: '4 4' }}
             contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--foreground)' }}
