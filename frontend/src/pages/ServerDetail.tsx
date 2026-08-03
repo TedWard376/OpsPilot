@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getServerById } from '../services/serverService'
+import { getServerById, loadServerCache } from '../services/serverService'
 import { getServerDetail } from '../services/serverDetailService'
 import { getServerLogs } from '../services/serverLogService'
 import { ServerDetailHeader } from '../components/servers/detail/ServerDetailHeader'
@@ -14,13 +14,63 @@ import { AIInvestigationPanel } from '../components/servers/detail/AIInvestigati
 import { ConfigurationSection } from '../components/servers/detail/ConfigurationSection'
 import { ActivityTimeline } from '../components/servers/detail/ActivityTimeline'
 import { LogsModal } from '../components/servers/detail/LogsModal'
+import type { ServerItem } from '../types/server'
 
 function ServerDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const server = id ? getServerById(id) : undefined
+  const [server, setServer] = useState<ServerItem | undefined>(undefined)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [logsOpen, setLogsOpen] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadServer() {
+      if (!id) {
+        if (!cancelled) {
+          setServer(undefined)
+          setLoading(false)
+        }
+        return
+      }
+
+      try {
+        setLoading(true)
+        await loadServerCache()
+        const result = getServerById(id)
+
+        if (!cancelled) {
+          setServer(result)
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load server details.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadServer()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id])
+
+  if (loading) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Loading server details…</div>
+  }
+
+  if (error) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">{error}</div>
+  }
 
   if (!server) {
     return (

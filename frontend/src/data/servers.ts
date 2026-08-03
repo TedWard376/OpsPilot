@@ -1,11 +1,31 @@
 /**
+ * Shared server-form constants used by the UI while the server data is
+ * gradually moving behind the backend API boundary.
+ */
+
+import type { ServerItem } from '../types/server'
+
+export type ServerEnvironment = 'Production' | 'Staging' | 'Development' | 'QA' | 'DR'
+export type NewServerInput = {
+  hostname: string
+  environment: ServerEnvironment
+  os: string
+  service: string
+  location: string
+  ipAddress: string
+}
+
+export const SERVER_ENVIRONMENTS = ['Production', 'Staging', 'Development', 'QA', 'DR'] as const
+export const SERVER_LOCATIONS = ['East US', 'West US', 'West EU', 'eu-central-1a', 'us-east-1a', 'us-west-2a'] as const
+export const SERVER_OS_OPTIONS = ['Ubuntu 22.04 LTS', 'RHEL 9.1', 'Debian 12', 'Ubuntu 24.04 LTS', 'Windows Server 2022', 'Rocky Linux 9', 'CentOS Stream 9'] as const
+export const SERVER_SERVICES = ['Web', 'API', 'Database', 'Worker', 'Cache', 'Auth', 'File Storage', 'Object Storage', 'Monitoring', 'Kubernetes', 'Logging', 'Build', 'Data Services'] as const
+
+/**
  * Mock server inventory — pure content, no access logic.
  * See services/serverService.ts for the functions that read this data
  * (getAllServers, getServerById); in production those functions call
  * `GET /api/servers` / `GET /api/servers/{id}` instead of reading this array.
  */
-
-import type { ServerItem } from '../types/server'
 
 export const serversData: ServerItem[] = [
   // Production — Web

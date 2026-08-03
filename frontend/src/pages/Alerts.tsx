@@ -19,7 +19,6 @@ function AlertsPage() {
     currentPage,
     totalPages,
     pageSize,
-    totalCount,
     filteredCount,
     paginatedAlerts,
     handleSearchChange,

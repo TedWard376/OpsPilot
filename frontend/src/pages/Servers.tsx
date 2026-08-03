@@ -1,12 +1,48 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ServerFilters } from '../components/servers/ServerFilters'
 import { ServerPageHeader, ServerTable } from '../components/servers/ServerTable'
-import { getAllServers } from '../services/serverService'
+import { getAllServers, loadServerCache } from '../services/serverService'
 import { useServerList } from '../hooks/useServerList'
+import type { ServerItem } from '../types/server'
 
 function ServersPage() {
   const navigate = useNavigate()
+  const [allServers, setAllServers] = useState<ServerItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadServers() {
+      try {
+        setIsLoading(true)
+        await loadServerCache()
+
+        if (!cancelled) {
+          setAllServers(getAllServers())
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load servers.')
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadServers()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const {
     searchQuery,
     environmentFilter,
@@ -23,7 +59,15 @@ function ServersPage() {
     handleStatusChange,
     handleSortChange,
     handlePageChange,
-  } = useServerList(getAllServers())
+  } = useServerList(allServers)
+
+  if (isLoading) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Loading servers…</div>
+  }
+
+  if (error) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">{error}</div>
+  }
 
   return (
     <div className="space-y-6 pb-6">
