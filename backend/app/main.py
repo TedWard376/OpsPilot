@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from app.api.routes.servers import router as servers_router
 
 app = FastAPI()
+app.include_router(servers_router)
 
 @app.get("/")
 def root():
