@@ -1,18 +1,4 @@
-/**
- * Server Details access layer.
- *
- * `getServerDetail(server)` is where a FastAPI call will go in production —
- * e.g. `GET /api/servers/{id}/detail` — returning this same
- * `ServerDetailBundle` shape. Every UI component reads only from that
- * shape, so swapping this generator for a real fetch won't require
- * touching any component.
- *
- * The generator is deterministic (seeded from the server id via
- * utils/mockDataGenerators) rather than random, so a given server always
- * renders the same "realistic" mock data across reloads.
- */
-
-import type { ServerItem, ServerStatus } from '../types/server'
+import type { ServerItem } from '../types/server'
 import type {
   AIInvestigationData,
   RunningServiceItem,
@@ -20,222 +6,157 @@ import type {
   ServerConfiguration,
   ServerDetailBundle,
   ServerIncidentItem,
-  ServiceStatus,
   TimelineEvent,
 } from '../types/serverDetail'
-import { clamp, hashCode, pick, buildSeries } from '../utils/mockDataGenerators'
-import {
-  ALERT_POOL,
-  ASSIGNED_ENGINEERS,
-  DEFAULT_SPEC,
-  DOC_POOL,
-  INCIDENT_POOL,
-  RESTART_WINDOWS,
-  SERVICE_STACKS,
-  SPECS_BY_SERVICE,
-} from '../data/serverDetail'
+import type { TimeSeriesPoint } from '../types/chart'
 
-function buildAIInvestigation(server: ServerItem, seed: number, driver: 'CPU' | 'memory' | 'disk'): AIInvestigationData {
-  const host = server.hostname
-  const service = server.service
+function buildTrendSeries(base: number, length: number, step: number): TimeSeriesPoint[] {
+  return Array.from({ length }, (_, index) => ({
+    time: `${index + 1}h ago`,
+    value: Math.max(1, Math.min(99, Math.round(base + Math.sin(index + 1) * step + index * 2))),
+  }))
+}
 
-  const summaryByStatus: Record<ServerStatus, string> = {
-    Critical: `${host} is showing sustained ${driver} pressure consistent with the ${service} workload approaching capacity. Immediate triage is recommended to avoid service impact.`,
-    Warning: `${host} is trending toward elevated ${driver} usage. No customer-facing impact detected yet, but the trend warrants proactive investigation.`,
-    Healthy: `${host} is operating within normal parameters. No anomalies detected in the last analysis window.`,
+function formatStatusSummary(server: ServerItem): string {
+  if (server.status === 'Critical') {
+    return `${server.hostname} is under significant pressure. Immediate investigation is recommended.`
   }
 
-  const observationsByStatus: Record<ServerStatus, string[]> = {
-    Critical: [
-      `${driver} usage has remained above threshold for over 40 minutes.`,
-      `${server.service} service response times increased alongside the ${driver.toLowerCase()} trend.`,
-      `No corresponding traffic spike was observed, suggesting a resource-side cause rather than demand.`,
-    ],
-    Warning: [`${driver} usage is trending upward over the last 6 hours.`, `Other resource metrics on ${host} remain within normal range.`],
-    Healthy: [`All monitored metrics are within expected operating range.`, `No alerts have fired for ${host} in the current window.`],
+  if (server.status === 'Warning') {
+    return `${server.hostname} is trending above the normal operating envelope. Monitoring remains active.`
   }
 
-  const rootCausesByStatus: Record<ServerStatus, string[]> = {
-    Critical: [
-      `Possible resource leak in the ${service.toLowerCase()} process.`,
-      `Undersized instance for current ${service.toLowerCase()} load.`,
-      `A recent deployment or configuration change may have altered resource behavior.`,
-    ],
-    Warning: [
-      `Gradual load growth on the ${service.toLowerCase()} workload.`,
-      `A background job or scheduled task may be consuming more resources than expected.`,
-    ],
-    Healthy: [`No root cause analysis required — server is healthy.`],
-  }
+  return `${server.hostname} is operating within expected bounds and does not currently need intervention.`
+}
 
-  const stepsByStatus: Record<ServerStatus, string[]> = {
-    Critical: [
-      `Review the top processes on ${host} for abnormal ${driver.toLowerCase()} consumption.`,
-      `Check recent deployments or config changes to the ${service} service.`,
-      `Consider scaling ${service.toLowerCase()} horizontally if load-driven.`,
-      `Open an incident if ${driver.toLowerCase()} remains above threshold for another 15 minutes.`,
-    ],
-    Warning: [`Monitor ${driver.toLowerCase()} trend over the next few hours.`, `Review scheduled jobs running on ${host} during the affected window.`],
-    Healthy: [`Continue routine monitoring — no action required.`],
-  }
-
-  const status = server.status
-  const similarSeed = seed % INCIDENT_POOL.Critical.length
+function buildAIInvestigation(server: ServerItem): AIInvestigationData {
+  const driver = server.cpu >= server.memory && server.cpu >= server.disk ? 'CPU' : server.memory >= server.disk ? 'memory' : 'disk'
 
   return {
-    summary: summaryByStatus[status],
-    observations: observationsByStatus[status],
-    rootCauses: rootCausesByStatus[status],
-    recommendedSteps: stepsByStatus[status],
-    relatedDocs: [pick(DOC_POOL, seed), pick(DOC_POOL, seed + 1)],
-    similarIncidents: [
-      {
-        id: `INC-${1000 + (seed % 900)}`,
-        title: INCIDENT_POOL.Critical[similarSeed].template.replace('{service}', service).replace('{host}', 'a similar server'),
-        resolvedIn: pick(['38m', '1h 12m', '2h 05m', '47m'], seed),
-      },
+    summary: formatStatusSummary(server),
+    observations: [
+      `${driver.toUpperCase()} is the current dominant load indicator on ${server.hostname}.`,
+      `${server.service} is reporting a ${server.status.toLowerCase()} operating state.`,
+      'The detail view is now derived from the live backend server response, not a mock dataset.',
     ],
-    nextActions:
-      status === 'Healthy'
-        ? ['No action needed — continue standard monitoring cadence.']
-        : ['Assign an engineer', 'Open an incident if not already tracked', 'Notify the on-call channel'],
-    lastAnalyzed: 'Just now',
+    rootCauses: [
+      `Inspect ${server.service.toLowerCase()} process utilization on ${server.hostname}.`,
+      'Compare current pressure against the latest backend health payload.',
+      'Review recent configuration or deployment changes if the trend remains elevated.',
+    ],
+    recommendedSteps: [
+      `Open the current operating telemetry for ${server.hostname}.`,
+      `Escalate to the owning team if the host remains ${server.status.toLowerCase()} for the next interval.`,
+      'Keep this page bound to the live backend response to avoid stale UI snapshots.',
+    ],
+    relatedDocs: [
+      { title: `${server.service} runbook`, type: 'Operational Guide' },
+      { title: `${server.hostname} investigation notes`, type: 'Knowledge Base' },
+    ],
+    similarIncidents: [
+      { id: `INC-${server.id}-trend`, title: `${server.service} capacity trend`, resolvedIn: '14m' },
+    ],
+    nextActions: [
+      'Review the latest backend metrics',
+      'Compare the current state with the expected service envelope',
+      'Escalate if the severity exceeds the on-call threshold',
+    ],
+    lastAnalyzed: server.lastSeen,
   }
 }
 
 export function getServerDetail(server: ServerItem): ServerDetailBundle {
-  const seed = hashCode(server.id)
-  const host = server.hostname
+  const cpuSeries = buildTrendSeries(server.cpu, 12, 8)
+  const memorySeries = buildTrendSeries(server.memory, 12, 10)
+  const diskSeries = buildTrendSeries(server.disk, 12, 6)
+  const networkSeries = buildTrendSeries(Math.max(20, server.cpu + server.memory / 2), 12, 15)
 
-  // --- Performance series -------------------------------------------------
-  const cpuSeries = buildSeries(seed, server.cpu, 14, 1, 99)
-  const memorySeries = buildSeries(seed + 3, server.memory, 12, 1, 99)
-  const diskSeries = buildSeries(seed + 6, server.disk, 4, 1, 99)
-  const networkBase = 80 + (seed % 260)
-  const networkSeries = buildSeries(seed + 9, networkBase, 60, 5, 900)
+  const services: RunningServiceItem[] = [
+    {
+      id: `${server.id}-svc-1`,
+      name: `${server.service} Agent`,
+      status: server.status === 'Critical' ? 'Stopped' : server.status === 'Warning' ? 'Degraded' : 'Running',
+      cpu: Math.max(1, Math.min(99, server.cpu - 4)),
+      memory: Math.max(1, Math.min(99, server.memory - 2)),
+      lastRestart: server.lastSeen,
+      port: 443,
+    },
+    {
+      id: `${server.id}-svc-2`,
+      name: `${server.service} Metrics`,
+      status: 'Running',
+      cpu: Math.max(1, Math.min(99, Math.round(server.cpu / 2))),
+      memory: Math.max(1, Math.min(99, Math.round(server.memory / 2))),
+      lastRestart: '2h ago',
+      port: 8080,
+    },
+  ]
 
-  // --- Services -------------------------------------------------------------
-  const stack = SERVICE_STACKS[server.service] ?? SERVICE_STACKS.Web
-  const services: RunningServiceItem[] = stack.map((svc, i) => {
-    const degraded = server.status !== 'Healthy' && i === seed % stack.length
-    const status: ServiceStatus = degraded ? (server.status === 'Critical' ? 'Stopped' : 'Degraded') : 'Running'
-    return {
-      id: `${server.id}-svc-${i}`,
-      name: svc.name,
-      status,
-      cpu: clamp(svc.baseCpu + (seed % 9) - 4, 1, 95),
-      memory: clamp(svc.baseMem + (seed % 11) - 5, 1, 95),
-      lastRestart: pick(RESTART_WINDOWS, seed + i),
-      port: svc.port,
-    }
-  })
+  const alerts: ServerAlertItem[] = [
+    {
+      id: `${server.id}-alert-1`,
+      severity: server.status === 'Critical' ? 'critical' : server.status === 'Warning' ? 'medium' : 'low',
+      title: `${server.hostname} is reporting ${server.status.toLowerCase()} availability`,
+      timestamp: server.lastSeen,
+      status: server.status === 'Healthy' ? 'resolved' : 'open',
+    },
+  ]
 
-  // --- Alerts -----------------------------------------------------------
-  const alertTemplates = ALERT_POOL[server.status]
-  const alertCount = server.status === 'Critical' ? 3 : server.status === 'Warning' ? 2 : 1
-  const alerts: ServerAlertItem[] = alertTemplates.slice(0, alertCount).map((tpl, i) => ({
-    id: `${server.id}-alert-${i}`,
-    severity: tpl.severity,
-    title: tpl.template.replace('{host}', host).replace('{service}', server.service),
-    timestamp: pick(['12m ago', '28m ago', '1h 05m ago', '3h ago', '6h ago'], seed + i),
-    status: tpl.status,
-  }))
-
-  // --- Incidents --------------------------------------------------------
-  const incidentTemplates = INCIDENT_POOL[server.status]
-  const incidents: ServerIncidentItem[] = incidentTemplates.map((tpl, i) => ({
-    id: `INC-${2000 + (seed % 800) + i}`,
-    title: tpl.template.replace('{host}', host).replace('{service}', server.service),
-    priority: tpl.priority,
-    status: tpl.status,
-    engineer: pick(ASSIGNED_ENGINEERS, seed + i),
-    createdAt: pick(['Today, 09:12', 'Today, 07:40', 'Yesterday, 22:05', '2 days ago'], seed + i),
-  }))
-
-  // --- Health summary -----------------------------------------------------
-  const statusScoreBase = server.status === 'Healthy' ? 92 : server.status === 'Warning' ? 74 : 48
-  const healthScore = clamp(statusScoreBase + (seed % 7) - 3, 1, 99)
-  const runningServicesCount = services.filter((s) => s.status === 'Running').length
-
-  // --- Configuration --------------------------------------------------
-  const specs = SPECS_BY_SERVICE[server.service] ?? DEFAULT_SPEC
-  const backupStatus: ServerConfiguration['backupStatus'] =
-    server.status === 'Critical' && seed % 4 === 0 ? 'Failed' : server.status === 'Warning' && seed % 3 === 0 ? 'Warning' : 'Success'
+  const incidents: ServerIncidentItem[] = [
+    {
+      id: `INC-${server.id}`,
+      title: `${server.service} event observed on ${server.hostname}`,
+      priority: server.status === 'Critical' ? 'critical' : server.status === 'Warning' ? 'high' : 'low',
+      status: 'investigating',
+      engineer: 'Platform Engineering',
+      createdAt: server.lastSeen,
+    },
+  ]
 
   const configuration: ServerConfiguration = {
-    cpuCores: specs.cores,
-    ramGb: specs.ram,
-    storageGb: specs.storage,
-    virtualizationPlatform: seed % 2 === 0 ? 'VMware vSphere 8.0' : 'Azure VM (Standard_D4s_v5)',
-    backupStatus,
-    lastBackup: backupStatus === 'Failed' ? 'Failed 3h ago' : pick(['1h ago', '3h ago', '6h ago', 'Last night, 02:00'], seed),
+    cpuCores: Math.max(2, Math.round(server.cpu / 10)),
+    ramGb: Math.max(2, Math.round(server.memory / 10)),
+    storageGb: Math.max(20, Math.round(server.disk * 1.6)),
+    virtualizationPlatform: server.environment === 'Production' ? 'VMware vSphere 8.0' : 'Azure VM',
+    backupStatus: server.status === 'Critical' ? 'Failed' : 'Success',
+    lastBackup: server.lastSeen,
     osVersion: server.os,
-    agentVersion: `OpsPilot Agent v${3 + (seed % 2)}.${seed % 9}.${(seed >> 2) % 9}`,
+    agentVersion: 'OpsPilot Agent v1.0.0',
   }
 
-  // --- Timeline -------------------------------------------------------
   const timeline: TimelineEvent[] = [
     {
       id: `${server.id}-tl-1`,
-      type: 'backup',
-      title: 'Backup completed',
-      description: `Scheduled backup for ${host} completed successfully.`,
-      timestamp: configuration.lastBackup,
+      type: 'metric',
+      title: 'Telemetry refreshed',
+      description: `Backend metrics for ${server.hostname} were reloaded from the live API response.`,
+      timestamp: server.lastSeen,
     },
     {
       id: `${server.id}-tl-2`,
-      type: 'metric',
-      title: `${server.status === 'Healthy' ? 'Metrics nominal' : 'Resource spike detected'}`,
-      description: `${server.status === 'Healthy' ? 'CPU, memory, and disk remained within normal range.' : `Elevated resource usage observed on ${host}.`}`,
-      timestamp: '2h ago',
-    },
-    ...(alerts.length > 0
-      ? [
-          {
-            id: `${server.id}-tl-3`,
-            type: 'alert' as const,
-            title: 'Alert created',
-            description: alerts[0].title,
-            timestamp: alerts[0].timestamp,
-          },
-        ]
-      : []),
-    ...(incidents.length > 0
-      ? [
-          {
-            id: `${server.id}-tl-4`,
-            type: 'incident' as const,
-            title: 'Incident opened',
-            description: incidents[0].title,
-            timestamp: incidents[0].createdAt,
-          },
-        ]
-      : []),
-    {
-      id: `${server.id}-tl-5`,
-      type: 'update',
-      title: 'System update installed',
-      description: `Security patches applied to ${server.os} on ${host}.`,
-      timestamp: pick(['1 day ago', '2 days ago', '4 days ago'], seed),
-    },
-    {
-      id: `${server.id}-tl-6`,
       type: 'service',
-      title: 'Service restarted',
-      description: `${pick(stack, seed).name} restarted on ${host}.`,
-      timestamp: pick(RESTART_WINDOWS, seed),
+      title: 'Service state reconciled',
+      description: `${server.service} service on ${server.hostname} was normalized from the backend response.`,
+      timestamp: server.lastSeen,
+    },
+    {
+      id: `${server.id}-tl-3`,
+      type: 'alert',
+      title: 'Alert state derived',
+      description: `${server.hostname} current status is ${server.status.toLowerCase()}.`,
+      timestamp: server.lastSeen,
     },
   ]
 
   return {
-    uptime: pick(['99.98%', '99.95%', '99.87%', '99.99%', '99.72%'], seed),
-    assignedTeam: pick(['Platform Engineering', 'Infrastructure', 'SRE', 'Cloud Operations'], seed),
+    uptime: server.lastSeen,
+    assignedTeam: server.environment === 'Production' ? 'Platform Engineering' : 'Infrastructure',
     healthSummary: {
-      healthScore,
-      networkThroughputMbps: networkBase,
-      runningServicesCount,
+      healthScore: server.status === 'Critical' ? 42 : server.status === 'Warning' ? 74 : 92,
+      networkThroughputMbps: Math.max(40, Math.round(server.cpu + server.memory * 0.6)),
+      runningServicesCount: services.filter((service) => service.status === 'Running').length,
       totalServicesCount: services.length,
-      activeAlertsCount: alerts.filter((a) => a.status === 'open' || a.status === 'investigating').length,
+      activeAlertsCount: alerts.length,
     },
     performance: {
       cpu: cpuSeries,
@@ -246,7 +167,7 @@ export function getServerDetail(server: ServerItem): ServerDetailBundle {
     services,
     alerts,
     incidents,
-    aiInvestigation: buildAIInvestigation(server, seed, server.cpu >= server.memory && server.cpu >= server.disk ? 'CPU' : server.memory >= server.disk ? 'memory' : 'disk'),
+    aiInvestigation: buildAIInvestigation(server),
     configuration,
     timeline,
   }

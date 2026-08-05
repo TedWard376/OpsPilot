@@ -26,6 +26,7 @@ interface BackendServerResponse {
 
 let serverCache: ServerItem[] = []
 let serverCachePromise: Promise<void> | null = null
+let serverIndexById = new Map<string, ServerItem>()
 
 function mapServerResponse(server: BackendServerResponse): ServerItem {
   return {
@@ -45,7 +46,11 @@ function mapServerResponse(server: BackendServerResponse): ServerItem {
   }
 }
 
-export async function loadServerCache(): Promise<ServerItem[]> {
+export async function loadServerCache(forceRefresh = false): Promise<ServerItem[]> {
+  if (forceRefresh) {
+    serverCachePromise = null
+  }
+
   if (!serverCachePromise) {
     serverCachePromise = fetch('/api/servers')
       .then(async (response) => {
@@ -55,9 +60,11 @@ export async function loadServerCache(): Promise<ServerItem[]> {
 
         const servers = (await response.json()) as BackendServerResponse[]
         serverCache = servers.map(mapServerResponse)
+        serverIndexById = new Map(serverCache.map((server) => [server.id, server]))
       })
       .catch((error) => {
         serverCache = []
+        serverIndexById = new Map()
         throw error
       })
   }
@@ -66,12 +73,28 @@ export async function loadServerCache(): Promise<ServerItem[]> {
   return serverCache
 }
 
+export async function loadServerById(id: string): Promise<ServerItem> {
+  const response = await fetch(`/api/servers/${encodeURIComponent(id)}`)
+
+  if (!response.ok) {
+    throw new Error('Unable to load the requested server from the backend.')
+  }
+
+  const server = (await response.json()) as BackendServerResponse
+  const mappedServer = mapServerResponse(server)
+
+  serverCache = [...serverCache.filter((item) => item.id !== mappedServer.id), mappedServer]
+  serverIndexById.set(mappedServer.id, mappedServer)
+
+  return mappedServer
+}
+
 export function getAllServers(): ServerItem[] {
   return serverCache
 }
 
 export function getServerById(id: string): ServerItem | undefined {
-  return serverCache.find((server) => server.id === id)
+  return serverIndexById.get(id) ?? serverCache.find((server) => server.id === id)
 }
 
 void loadServerCache().catch(() => {

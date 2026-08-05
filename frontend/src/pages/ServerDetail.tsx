@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getServerById, loadServerCache } from '../services/serverService'
+import { loadServerById } from '../services/serverService'
 import { getServerDetail } from '../services/serverDetailService'
 import { getServerLogs } from '../services/serverLogService'
 import { ServerDetailHeader } from '../components/servers/detail/ServerDetailHeader'
@@ -39,8 +39,7 @@ function ServerDetailPage() {
 
       try {
         setLoading(true)
-        await loadServerCache()
-        const result = getServerById(id)
+        const result = await loadServerById(id)
 
         if (!cancelled) {
           setServer(result)

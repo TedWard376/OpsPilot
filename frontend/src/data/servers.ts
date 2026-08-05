@@ -1,11 +1,8 @@
-/**
- * Shared server-form constants used by the UI while the server data is
- * gradually moving behind the backend API boundary.
- */
-
 import type { ServerItem } from '../types/server'
+import type { ServerEnvironment } from '../types/server'
 
-export type ServerEnvironment = 'Production' | 'Staging' | 'Development' | 'QA' | 'DR'
+export type { ServerEnvironment } from '../types/server'
+
 export type NewServerInput = {
   hostname: string
   environment: ServerEnvironment
@@ -15,55 +12,166 @@ export type NewServerInput = {
   ipAddress: string
 }
 
-export const SERVER_ENVIRONMENTS = ['Production', 'Staging', 'Development', 'QA', 'DR'] as const
-export const SERVER_LOCATIONS = ['East US', 'West US', 'West EU', 'eu-central-1a', 'us-east-1a', 'us-west-2a'] as const
-export const SERVER_OS_OPTIONS = ['Ubuntu 22.04 LTS', 'RHEL 9.1', 'Debian 12', 'Ubuntu 24.04 LTS', 'Windows Server 2022', 'Rocky Linux 9', 'CentOS Stream 9'] as const
-export const SERVER_SERVICES = ['Web', 'API', 'Database', 'Worker', 'Cache', 'Auth', 'File Storage', 'Object Storage', 'Monitoring', 'Kubernetes', 'Logging', 'Build', 'Data Services'] as const
+export const SERVER_ENVIRONMENTS: ServerEnvironment[] = ['Production', 'Staging', 'Development']
 
-/**
- * Mock server inventory — pure content, no access logic.
- * See services/serverService.ts for the functions that read this data
- * (getAllServers, getServerById); in production those functions call
- * `GET /api/servers` / `GET /api/servers/{id}` instead of reading this array.
- */
+export const SERVER_SERVICES = ['Web', 'API', 'Database', 'Cache', 'Build', 'Worker', 'Data Services', 'Logging'] as const
+
+export const SERVER_OS_OPTIONS = [
+  'Ubuntu 22.04 LTS',
+  'Ubuntu 24.04 LTS',
+  'Debian 12',
+  'RHEL 9',
+  'CentOS Stream 9',
+  'Windows Server 2022',
+  'Rocky Linux 9',
+] as const
+
+export const SERVER_LOCATIONS = [
+  'us-east-1a',
+  'us-east-1b',
+  'us-east-1c',
+  'us-east-1d',
+  'us-east-1e',
+  'us-west-2a',
+  'us-west-2b',
+  'eu-central-1a',
+  'ap-southeast-1a',
+] as const
 
 export const serversData: ServerItem[] = [
-  // Production — Web
-  { id: 'srv-01', hostname: 'prod-web-01', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 78, memory: 65, disk: 42, status: 'Healthy', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.2.11', service: 'Web' },
-  { id: 'srv-02', hostname: 'prod-web-02', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 45, memory: 72, disk: 58, status: 'Healthy', location: 'East US', lastSeen: '1m ago', lastSeenAt: '2026-07-13T09:44:00Z', ipAddress: '10.10.2.12', service: 'Web' },
-  { id: 'srv-03', hostname: 'prod-web-03', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 52, memory: 61, disk: 39, status: 'Healthy', location: 'West US', lastSeen: '2m ago', lastSeenAt: '2026-07-13T09:43:00Z', ipAddress: '10.10.2.13', service: 'Web' },
-
-  // Production — API
-  { id: 'srv-04', hostname: 'prod-api-01', environment: 'Production', os: 'RHEL 9.1', cpu: 72, memory: 68, disk: 41, status: 'Warning', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.3.11', service: 'API' },
-  { id: 'srv-05', hostname: 'prod-api-02', environment: 'Production', os: 'RHEL 9.1', cpu: 58, memory: 64, disk: 38, status: 'Healthy', location: 'East US', lastSeen: '1m ago', lastSeenAt: '2026-07-13T09:44:00Z', ipAddress: '10.10.3.12', service: 'API' },
-
-  // Production — Database
-  { id: 'srv-06', hostname: 'prod-db-01', environment: 'Production', os: 'RHEL 9.1', cpu: 94, memory: 89, disk: 76, status: 'Critical', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.1.11', service: 'Database' },
-  { id: 'srv-07', hostname: 'prod-db-02', environment: 'Production', os: 'RHEL 9.1', cpu: 34, memory: 51, disk: 63, status: 'Healthy', location: 'West US', lastSeen: '2m ago', lastSeenAt: '2026-07-13T09:43:00Z', ipAddress: '10.10.1.12', service: 'Database' },
-
-  // Production — File, Auth, Cache
-  { id: 'srv-08', hostname: 'prod-file-01', environment: 'Production', os: 'Debian 12', cpu: 28, memory: 49, disk: 81, status: 'Healthy', location: 'East US', lastSeen: '4m ago', lastSeenAt: '2026-07-13T09:41:00Z', ipAddress: '10.10.7.11', service: 'File Storage' },
-  { id: 'srv-09', hostname: 'prod-auth-01', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 35, memory: 42, disk: 28, status: 'Healthy', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.5.11', service: 'Auth' },
-  { id: 'srv-10', hostname: 'prod-auth-02', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 32, memory: 39, disk: 27, status: 'Healthy', location: 'West US', lastSeen: '3m ago', lastSeenAt: '2026-07-13T09:42:00Z', ipAddress: '10.10.5.12', service: 'Auth' },
-  { id: 'srv-11', hostname: 'prod-cache-01', environment: 'Production', os: 'Debian 12', cpu: 67, memory: 82, disk: 22, status: 'Warning', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.4.11', service: 'Cache' },
-
-  // Production — Infrastructure
-  { id: 'srv-12', hostname: 'prod-k8s-01', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 54, memory: 69, disk: 44, status: 'Healthy', location: 'East US', lastSeen: 'Just now', lastSeenAt: '2026-07-13T09:45:00Z', ipAddress: '10.10.8.11', service: 'Kubernetes' },
-  { id: 'srv-13', hostname: 'prod-monitor-01', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 41, memory: 55, disk: 67, status: 'Warning', location: 'East US', lastSeen: '1m ago', lastSeenAt: '2026-07-13T09:44:00Z', ipAddress: '10.10.9.11', service: 'Monitoring' },
-  { id: 'srv-14', hostname: 'prod-storage-01', environment: 'Production', os: 'Debian 12', cpu: 28, memory: 49, disk: 81, status: 'Healthy', location: 'East US', lastSeen: '4m ago', lastSeenAt: '2026-07-13T09:41:00Z', ipAddress: '10.10.11.11', service: 'Object Storage' },
-  { id: 'srv-15', hostname: 'prod-worker-01', environment: 'Production', os: 'Ubuntu 22.04 LTS', cpu: 61, memory: 72, disk: 48, status: 'Warning', location: 'West US', lastSeen: '2m ago', lastSeenAt: '2026-07-13T09:43:00Z', ipAddress: '10.10.12.11', service: 'Worker' },
-
-  // Staging
-  { id: 'srv-16', hostname: 'staging-web-01', environment: 'Staging', os: 'Ubuntu 22.04 LTS', cpu: 22, memory: 35, disk: 28, status: 'Healthy', location: 'West EU', lastSeen: '3m ago', lastSeenAt: '2026-07-13T09:42:00Z', ipAddress: '10.20.2.11', service: 'Web' },
-  { id: 'srv-17', hostname: 'staging-api-01', environment: 'Staging', os: 'RHEL 9.1', cpu: 28, memory: 38, disk: 32, status: 'Healthy', location: 'West EU', lastSeen: '5m ago', lastSeenAt: '2026-07-13T09:40:00Z', ipAddress: '10.20.3.11', service: 'API' },
-  { id: 'srv-18', hostname: 'staging-db-01', environment: 'Staging', os: 'Ubuntu 22.04 LTS', cpu: 18, memory: 32, disk: 45, status: 'Healthy', location: 'West EU', lastSeen: '6m ago', lastSeenAt: '2026-07-13T09:39:00Z', ipAddress: '10.20.1.11', service: 'Database' },
-  { id: 'srv-19', hostname: 'staging-file-01', environment: 'Staging', os: 'Debian 12', cpu: 14, memory: 26, disk: 52, status: 'Healthy', location: 'West EU', lastSeen: '8m ago', lastSeenAt: '2026-07-13T09:37:00Z', ipAddress: '10.20.7.11', service: 'File Storage' },
-  { id: 'srv-20', hostname: 'staging-auth-01', environment: 'Staging', os: 'Ubuntu 22.04 LTS', cpu: 15, memory: 25, disk: 22, status: 'Healthy', location: 'West EU', lastSeen: '7m ago', lastSeenAt: '2026-07-13T09:38:00Z', ipAddress: '10.20.5.11', service: 'Auth' },
-  { id: 'srv-21', hostname: 'staging-app-01', environment: 'Staging', os: 'Ubuntu 22.04 LTS', cpu: 23, memory: 38, disk: 29, status: 'Healthy', location: 'West EU', lastSeen: '3m ago', lastSeenAt: '2026-07-13T09:42:00Z', ipAddress: '10.20.2.12', service: 'Web' },
-
-  // Development
-  { id: 'srv-22', hostname: 'dev-web-01', environment: 'Development', os: 'Ubuntu 22.04 LTS', cpu: 12, memory: 24, disk: 18, status: 'Healthy', location: 'West EU', lastSeen: '5m ago', lastSeenAt: '2026-07-13T09:40:00Z', ipAddress: '10.30.2.11', service: 'Web' },
-  { id: 'srv-23', hostname: 'dev-api-01', environment: 'Development', os: 'RHEL 9.1', cpu: 15, memory: 25, disk: 20, status: 'Healthy', location: 'West EU', lastSeen: '10m ago', lastSeenAt: '2026-07-13T09:35:00Z', ipAddress: '10.30.3.11', service: 'API' },
-  { id: 'srv-24', hostname: 'dev-db-01', environment: 'Development', os: 'Ubuntu 22.04 LTS', cpu: 10, memory: 20, disk: 35, status: 'Healthy', location: 'West EU', lastSeen: '12m ago', lastSeenAt: '2026-07-13T09:33:00Z', ipAddress: '10.30.1.11', service: 'Database' },
-  { id: 'srv-25', hostname: 'dev-app-01', environment: 'Development', os: 'Ubuntu 22.04 LTS', cpu: 12, memory: 24, disk: 18, status: 'Healthy', location: 'West EU', lastSeen: '5m ago', lastSeenAt: '2026-07-13T09:40:00Z', ipAddress: '10.30.2.12', service: 'Web' },
+  {
+    id: 'srv-001',
+    hostname: 'prod-web-01',
+    environment: 'Production',
+    os: 'Ubuntu 22.04 LTS',
+    cpu: 38,
+    memory: 61,
+    disk: 54,
+    status: 'Healthy',
+    location: 'us-east-1a',
+    lastSeen: 'Just now',
+    lastSeenAt: '2026-08-03T09:42:00Z',
+    ipAddress: '10.12.8.21',
+    service: 'Web',
+  },
+  {
+    id: 'srv-002',
+    hostname: 'prod-api-02',
+    environment: 'Production',
+    os: 'Debian 12',
+    cpu: 52,
+    memory: 73,
+    disk: 66,
+    status: 'Healthy',
+    location: 'us-east-1b',
+    lastSeen: '1m ago',
+    lastSeenAt: '2026-08-03T09:39:11Z',
+    ipAddress: '10.12.8.22',
+    service: 'API',
+  },
+  {
+    id: 'srv-003',
+    hostname: 'prod-db-01',
+    environment: 'Production',
+    os: 'RHEL 9',
+    cpu: 74,
+    memory: 81,
+    disk: 71,
+    status: 'Warning',
+    location: 'us-east-1c',
+    lastSeen: '2m ago',
+    lastSeenAt: '2026-08-03T09:35:59Z',
+    ipAddress: '10.12.8.31',
+    service: 'Database',
+  },
+  {
+    id: 'srv-004',
+    hostname: 'staging-api-01',
+    environment: 'Staging',
+    os: 'Ubuntu 22.04 LTS',
+    cpu: 29,
+    memory: 57,
+    disk: 49,
+    status: 'Healthy',
+    location: 'us-west-2a',
+    lastSeen: '4m ago',
+    lastSeenAt: '2026-08-03T09:28:15Z',
+    ipAddress: '10.14.6.14',
+    service: 'API',
+  },
+  {
+    id: 'srv-005',
+    hostname: 'dev-build-02',
+    environment: 'Development',
+    os: 'Ubuntu 24.04 LTS',
+    cpu: 43,
+    memory: 48,
+    disk: 42,
+    status: 'Healthy',
+    location: 'eu-central-1a',
+    lastSeen: '5m ago',
+    lastSeenAt: '2026-08-03T09:20:42Z',
+    ipAddress: '10.16.2.44',
+    service: 'Build',
+  },
+  {
+    id: 'srv-006',
+    hostname: 'dr-cache-01',
+    environment: 'Production',
+    os: 'CentOS Stream 9',
+    cpu: 33,
+    memory: 69,
+    disk: 61,
+    status: 'Healthy',
+    location: 'us-west-2b',
+    lastSeen: '8m ago',
+    lastSeenAt: '2026-08-03T09:16:08Z',
+    ipAddress: '10.21.4.11',
+    service: 'Cache',
+  },
+  {
+    id: 'srv-007',
+    hostname: 'prod-worker-03',
+    environment: 'Production',
+    os: 'Ubuntu 22.04 LTS',
+    cpu: 92,
+    memory: 88,
+    disk: 78,
+    status: 'Critical',
+    location: 'us-east-1d',
+    lastSeen: 'Just now',
+    lastSeenAt: '2026-08-03T09:07:40Z',
+    ipAddress: '10.12.8.51',
+    service: 'Worker',
+  },
+  {
+    id: 'srv-008',
+    hostname: 'qa-data-01',
+    environment: 'Development',
+    os: 'Windows Server 2022',
+    cpu: 24,
+    memory: 55,
+    disk: 44,
+    status: 'Healthy',
+    location: 'ap-southeast-1a',
+    lastSeen: '10m ago',
+    lastSeenAt: '2026-08-03T08:58:31Z',
+    ipAddress: '10.18.9.27',
+    service: 'Data Services',
+  },
+  {
+    id: 'srv-009',
+    hostname: 'prod-log-02',
+    environment: 'Production',
+    os: 'Rocky Linux 9',
+    cpu: 66,
+    memory: 70,
+    disk: 57,
+    status: 'Warning',
+    location: 'us-east-1e',
+    lastSeen: '12m ago',
+    lastSeenAt: '2026-08-03T08:50:03Z',
+    ipAddress: '10.12.8.62',
+    service: 'Logging',
+  },
 ]

@@ -19,7 +19,7 @@ function ServersPage() {
     async function loadServers() {
       try {
         setIsLoading(true)
-        await loadServerCache()
+        await loadServerCache(true)
 
         if (!cancelled) {
           setAllServers(getAllServers())
