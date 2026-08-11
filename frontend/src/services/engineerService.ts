@@ -1,9 +1,24 @@
-export async function getAssignedEngineers(): Promise<string[]> {
-  const response = await fetch('/api/engineers')
+let engineerRosterPromise: Promise<string[]> | null = null
 
-  if (!response.ok) {
-    throw new Error('Unable to load engineers from the backend.')
+export function getAssignedEngineers(forceRefresh = false): Promise<string[]> {
+  if (forceRefresh) {
+    engineerRosterPromise = null
   }
 
-  return (await response.json()) as string[]
+  if (!engineerRosterPromise) {
+    engineerRosterPromise = fetch('/api/engineers')
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Unable to load engineers from the backend.')
+        }
+
+        return (await response.json()) as string[]
+      })
+      .catch((error) => {
+        engineerRosterPromise = null
+        throw error
+      })
+  }
+
+  return engineerRosterPromise
 }

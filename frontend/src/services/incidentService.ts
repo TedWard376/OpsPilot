@@ -11,7 +11,7 @@
 
 import type { IncidentItem, NewIncidentInput } from '../types/incident'
 import { getAllServers, loadServerCache } from './serverService'
-import { incidentAffectedSystems, incidentEngineers, incidentsData, systemLabelsForServers } from '../data/incidents'
+import { incidentAffectedSystems, incidentsData, systemLabelsForServers } from '../data/incidents'
 
 interface BackendIncidentResponse {
   id: string
@@ -166,10 +166,6 @@ export function getAllIncidents(): IncidentItem[] {
 
 export function getIncidentById(id: string): IncidentItem | undefined {
   return incidentIndexById.get(id) ?? incidentCache.find((incident) => incident.id === id)
-}
-
-export function getIncidentEngineers(): readonly string[] {
-  return incidentEngineers
 }
 
 export function getIncidentAffectedSystems(): readonly string[] {

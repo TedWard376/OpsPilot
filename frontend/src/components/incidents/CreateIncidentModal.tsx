@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Search } from 'lucide-react'
 import { Modal } from '../Modal'
 import type { IncidentPriority, NewIncidentInput } from '../../types/incident'
-import { getIncidentEngineers } from '../../services/incidentService'
+import { getAssignedEngineers } from '../../services/engineerService'
 import { getAllServers } from '../../services/serverService'
 import { ServerHealthIndicator } from '../servers/ServerHealthIndicator'
 
@@ -23,10 +23,27 @@ const fieldClassName =
 export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [], initialTitle = '', initialPriority = 'Medium' }: CreateIncidentModalProps) {
   const [title, setTitle] = useState(initialTitle)
   const [priority, setPriority] = useState<IncidentPriority>(initialPriority)
-  const [assignedEngineer, setAssignedEngineer] = useState<string>(getIncidentEngineers()[0])
+  const [engineers, setEngineers] = useState<string[]>([])
+  const [assignedEngineer, setAssignedEngineer] = useState('')
   const [affectedServerIds, setAffectedServerIds] = useState<string[]>(initialServerIds)
   const [serverQuery, setServerQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void getAssignedEngineers().then((roster) => {
+      if (!cancelled) {
+        setEngineers(roster)
+        setAssignedEngineer((current) => current || roster[0] || '')
+      }
+    }).catch(() => {
+      if (!cancelled) setError('Unable to load engineers.')
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filteredServers = useMemo(() => {
     const allServers = getAllServers()
@@ -105,7 +122,7 @@ export function CreateIncidentModal({ onClose, onCreate, initialServerIds = [], 
               onChange={(e) => setAssignedEngineer(e.target.value)}
               className={`mt-1.5 ${fieldClassName}`}
             >
-              {getIncidentEngineers().map((engineer) => (
+              {engineers.map((engineer) => (
                 <option key={engineer} value={engineer}>
                   {engineer}
                 </option>
