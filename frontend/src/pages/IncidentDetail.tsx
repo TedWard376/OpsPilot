@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getIncidentById, updateIncident } from '../services/incidentService'
+import { getIncidentById, loadIncidentById, updateIncident } from '../services/incidentService'
 import type { IncidentPriority } from '../types/incident'
 import { getIncidentDetail, buildTimelineStages, stageIndexForStatus, statusLabelForStage, getTimelineStageLabels } from '../services/incidentDetailService'
-import type { ActivityLogEntry, InvestigationNote, ResolutionInfo } from '../types/incidentDetail'
+import type { ActivityLogEntry, InvestigationNote, ResolutionInfo, IncidentDetailBundle } from '../types/incidentDetail'
 import { IncidentDetailHeader } from '../components/incidents/detail/IncidentDetailHeader'
 import { IncidentTimelineStepper } from '../components/incidents/detail/IncidentTimelineStepper'
 import { RecentMetricsSection } from '../components/incidents/detail/RecentMetricsSection'
@@ -23,12 +23,65 @@ const LAST_STAGE_INDEX = TIMELINE_LABELS.length - 1
 function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const incident = id ? getIncidentById(id) : undefined
+  const [incident, setIncident] = useState<ReturnType<typeof getIncidentById> | undefined>(() => (id ? getIncidentById(id) : undefined))
+  const [isLoading, setIsLoading] = useState(id != null && incident == null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadIncident() {
+      if (!id) return
+
+      try {
+        setIsLoading(true)
+        const loaded = await loadIncidentById(id)
+        if (!cancelled) {
+          setIncident(loaded)
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load incident.')
+          setIncident(undefined)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    if (!incident && id) {
+      void loadIncident()
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, incident])
 
   // Single call composes every mock dataset this page needs. In production
   // this becomes something like `useIncidentDetail(id)` backed by
   // `GET /api/incidents/{id}/detail`.
-  const detail = useMemo(() => (incident ? getIncidentDetail(incident) : undefined), [incident])
+  const [detail, setDetail] = useState<IncidentDetailBundle | undefined>(undefined)
+
+  useEffect(() => {
+    if (!incident) {
+      setDetail(undefined)
+      return
+    }
+
+    try {
+      const built = getIncidentDetail(incident)
+      setDetail(built)
+      setError(null)
+    } catch (err) {
+      setDetail(undefined)
+      setError(err instanceof Error ? err.message : String(err))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incident])
 
   const [priority, setPriority] = useState<IncidentPriority | undefined>(incident?.priority)
   const [assignedEngineer, setAssignedEngineer] = useState(incident?.assignedEngineer ?? '')
@@ -38,6 +91,46 @@ function IncidentDetailPage() {
   const [resolution, setResolution] = useState<ResolutionInfo | undefined>(detail?.resolution)
   const [reassignOpen, setReassignOpen] = useState(false)
   const [escalateOpen, setEscalateOpen] = useState(false)
+
+  useEffect(() => {
+    if (!incident || !detail) {
+      return
+    }
+
+    setPriority(incident.priority)
+    setAssignedEngineer(incident.assignedEngineer ?? '')
+    setStageIndex(stageIndexForStatus(incident.status))
+    setNotes(detail.notes)
+    setActivityLog(detail.activityLog)
+    setResolution(detail.resolution)
+  }, [incident, detail])
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">
+        Loading incident details…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 pb-6">
+        <button
+          type="button"
+          onClick={() => navigate('/incidents')}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--primary)] hover:underline"
+        >
+          <ArrowLeft size={16} />
+          Back to Incidents
+        </button>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+          <h1 className="text-lg font-semibold text-[var(--foreground)]">Unable to load incident</h1>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!incident || !detail || !priority || !resolution) {
     return (

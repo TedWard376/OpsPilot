@@ -4,7 +4,7 @@ import { IncidentFilters } from '../components/incidents/IncidentFilters'
 import { IncidentPageHeader } from '../components/incidents/IncidentPageHeader'
 import { IncidentTable } from '../components/incidents/IncidentTable'
 import { CreateIncidentModal } from '../components/incidents/CreateIncidentModal'
-import { addIncident, getAllIncidents } from '../services/incidentService'
+import { addIncident, getAllIncidents, loadIncidentCache } from '../services/incidentService'
 import type { NewIncidentInput } from '../types/incident'
 import { useIncidentList } from '../hooks/useIncidentList'
 
@@ -20,18 +20,48 @@ function IncidentsPage() {
   // array reference) after a create/update so the list and KPI counts
   // re-render. In production this becomes a data-fetching hook (e.g.
   // useQuery) instead of an initial getAllIncidents() read.
-  const [incidents, setIncidents] = useState(getAllIncidents())
+  const [incidents, setIncidents] = useState<Awaited<ReturnType<typeof getAllIncidents>>>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [prefillServerIds, setPrefillServerIds] = useState<string[]>([])
 
   // Deep-link from a server's "Open Incident" button: arrive here with the
   // server already selected and the Create Incident form open.
   useEffect(() => {
+    let cancelled = false
+
+    async function loadIncidents() {
+      try {
+        setIsLoading(true)
+        await loadIncidentCache(true)
+        if (!cancelled) {
+          setIncidents(getAllIncidents())
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load incidents.')
+          setIncidents([])
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadIncidents()
+
     const state = location.state as LocationState | null
     if (state?.prefillServerId) {
       setPrefillServerIds([state.prefillServerId])
       setCreateOpen(true)
       navigate(location.pathname, { replace: true, state: null })
+    }
+
+    return () => {
+      cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -64,6 +94,14 @@ function IncidentsPage() {
     setIncidents([...getAllIncidents()])
     setCreateOpen(false)
     navigate(`/incidents/${created.id}`)
+  }
+
+  if (isLoading) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Loading incidents…</div>
+  }
+
+  if (error) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">{error}</div>
   }
 
   function handleCloseCreate() {
