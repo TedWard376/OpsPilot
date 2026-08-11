@@ -10,8 +10,6 @@ import { serversData } from './servers'
 import type { IncidentItem, IncidentPriority, IncidentStatus } from '../types/incident'
 
 // Source of truth for the "Assign To" dropdown.
-export const incidentEngineers = ['A. Patel', 'M. Chen', 'R. Gomez', 'L. Brooks', 'S. Novak', 'J. Kim'] as const
-
 // Canonical, unambiguous label per server `service` type — every incident's
 // affectedSystems is derived from this so it always reflects real inventory.
 const SERVICE_TO_SYSTEM_LABEL: Record<string, string> = {

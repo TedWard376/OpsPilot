@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { IncidentPriority, IncidentStatus } from '../../types/incident'
-import { getIncidentAffectedSystems, getIncidentEngineers } from '../../services/incidentService'
+import { getIncidentAffectedSystems } from '../../services/incidentService'
+import { getAssignedEngineers } from '../../services/engineerService'
 import { IncidentSearch } from './IncidentSearch'
 
 interface IncidentFiltersProps {
@@ -60,6 +62,21 @@ export function IncidentFilters({
   systemFilter,
   onSystemChange,
 }: IncidentFiltersProps) {
+  const [engineers, setEngineers] = useState<string[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    void getAssignedEngineers().then((roster) => {
+      if (!cancelled) setEngineers(roster)
+    }).catch(() => {
+      if (!cancelled) setEngineers([])
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
       <IncidentSearch value={searchQuery} onChange={onSearchChange} />
@@ -96,7 +113,7 @@ export function IncidentFilters({
           value={engineerFilter}
           onChange={onEngineerChange}
           ariaLabel="Filter by assigned engineer"
-          options={[{ value: 'All', label: 'All engineers' }, ...getIncidentEngineers().map((e) => ({ value: e, label: e }))]}
+          options={[{ value: 'All', label: 'All engineers' }, ...engineers.map((engineer) => ({ value: engineer, label: engineer }))]}
         />
 
         <FilterSelect
