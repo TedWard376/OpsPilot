@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { loadAlertById, updateAlert } from '../services/alertService'
 import { getServerById } from '../services/serverService'
 import { getAlertDetail } from '../services/alertDetailService'
+import { getAssignedEngineers } from '../services/engineerService'
 import { addIncident } from '../services/incidentService'
 import type { NewIncidentInput } from '../types/incident'
 import type { AlertItem, AlertStatus } from '../types/alert'
@@ -66,13 +67,26 @@ function AlertDetailPage() {
 
   const server = alert ? getServerById(alert.affectedServerId) : undefined
 
+  // Real engineer roster from GET /api/engineers, same source used by
+  // AssignEngineerModal and the incident-side engineer pickers. Used below
+  // so alert timeline/related-incident/acknowledgement data reflects actual
+  // engineers instead of a mock name pool.
+  const [engineers, setEngineers] = useState<string[]>([])
+
+  useEffect(() => {
+    void getAssignedEngineers().then((roster) => {
+      setEngineers(roster)
+    })
+  }, [])
+
   // Single call composes every mock dataset this page needs beyond the
   // alert record itself (health summary, timeline, AI investigation, etc).
   // The backend currently only exposes GET /api/alerts and
   // GET /api/alerts/{id}, so this stays mock-generated for now; in
   // production it becomes something like `useAlertDetail(id)` backed by
-  // `GET /api/alerts/{id}/detail`.
-  const detail = useMemo(() => (alert ? getAlertDetail(alert, server) : undefined), [alert, server])
+  // `GET /api/alerts/{id}/detail`. Engineer names are the one exception —
+  // those come from the real GET /api/engineers roster above.
+  const detail = useMemo(() => (alert ? getAlertDetail(alert, server, engineers) : undefined), [alert, server, engineers])
 
   const [status, setStatus] = useState<AlertStatus | undefined>(undefined)
   const [assignedEngineer, setAssignedEngineer] = useState<string | null>(null)

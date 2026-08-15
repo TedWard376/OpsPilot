@@ -117,8 +117,6 @@ export const ALERT_DOC_POOL = [
 
 export const INCIDENT_TITLE_TEMPLATES = ['{alertName} on {host}', '{service} service impact from {alertName}', 'Investigate: {alertName} — {host}'] as const
 
-export const RELATED_INCIDENT_ENGINEERS = ['A. Patel', 'M. Chen', 'R. Gomez', 'L. Brooks', 'S. Novak', 'J. Kim'] as const
-
 export const TIMELINE_ACK_OFFSETS = ['5m after trigger', '8m after trigger', '12m after trigger', '18m after trigger'] as const
 export const TIMELINE_INCIDENT_OFFSETS = ['15m after trigger', '22m after trigger', '31m after trigger'] as const
 export const TIMELINE_RESOLVED_OFFSETS = ['Just now', '10m ago', '35m ago', '1h ago'] as const

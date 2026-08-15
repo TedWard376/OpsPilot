@@ -24,7 +24,6 @@ import {
   IMPACT_POOL,
   INCIDENT_TITLE_TEMPLATES,
   INVESTIGATION_STEPS_POOL,
-  RELATED_INCIDENT_ENGINEERS,
   RISK_POOL,
   ROOT_CAUSE_POOL,
   TIMELINE_ACK_OFFSETS,
@@ -131,7 +130,7 @@ function buildRelatedIncidents(alert: AlertItem, seed: number, engineer: string)
   ]
 }
 
-export function getAlertDetail(alert: AlertItem, server: ServerItem | undefined): AlertDetailBundle {
+export function getAlertDetail(alert: AlertItem, server: ServerItem | undefined, engineers: string[]): AlertDetailBundle {
   const seed = hashCode(alert.id)
   const service = server?.service ?? 'Web'
 
@@ -152,7 +151,7 @@ export function getAlertDetail(alert: AlertItem, server: ServerItem | undefined)
 
   // --- Engineer / acknowledgement ----------------------------------------
   const pastAcknowledgement = alert.status === 'Acknowledged' || alert.status === 'Investigating' || alert.status === 'Resolved'
-  const engineer = pick(RELATED_INCIDENT_ENGINEERS, seed)
+  const engineer = engineers.length > 0 ? pick(engineers, seed) : 'Unassigned'
 
   return {
     healthSummary: {
