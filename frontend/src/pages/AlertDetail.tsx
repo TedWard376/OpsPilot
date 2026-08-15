@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getAlertById, updateAlert } from '../services/alertService'
+import { loadAlertById, updateAlert } from '../services/alertService'
 import { getServerById } from '../services/serverService'
 import { getAlertDetail } from '../services/alertDetailService'
 import { addIncident } from '../services/incidentService'
 import type { NewIncidentInput } from '../types/incident'
+import type { AlertItem, AlertStatus } from '../types/alert'
 import { AlertDetailHeader } from '../components/alerts/detail/AlertDetailHeader'
 import { AlertHealthSummarySection } from '../components/alerts/detail/AlertHealthSummarySection'
 import { AffectedResourcePanel } from '../components/alerts/detail/AffectedResourcePanel'
@@ -20,18 +21,84 @@ import { CreateIncidentModal } from '../components/incidents/CreateIncidentModal
 function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const alert = id ? getAlertById(id) : undefined
+
+  const [alert, setAlert] = useState<AlertItem | undefined>(undefined)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadAlert() {
+      if (!id) {
+        if (!cancelled) {
+          setAlert(undefined)
+          setLoading(false)
+        }
+        return
+      }
+
+      try {
+        setLoading(true)
+        const result = await loadAlertById(id)
+
+        if (!cancelled) {
+          setAlert(result)
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load alert details.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadAlert()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id])
+
   const server = alert ? getServerById(alert.affectedServerId) : undefined
 
-  // Single call composes every mock dataset this page needs. In production
-  // this becomes something like `useAlertDetail(id)` backed by
+  // Single call composes every mock dataset this page needs beyond the
+  // alert record itself (health summary, timeline, AI investigation, etc).
+  // The backend currently only exposes GET /api/alerts and
+  // GET /api/alerts/{id}, so this stays mock-generated for now; in
+  // production it becomes something like `useAlertDetail(id)` backed by
   // `GET /api/alerts/{id}/detail`.
   const detail = useMemo(() => (alert ? getAlertDetail(alert, server) : undefined), [alert, server])
 
-  const [status, setStatus] = useState(alert?.status)
-  const [assignedEngineer, setAssignedEngineer] = useState<string | null>(detail?.acknowledgedBy ?? null)
+  const [status, setStatus] = useState<AlertStatus | undefined>(undefined)
+  const [assignedEngineer, setAssignedEngineer] = useState<string | null>(null)
   const [assignOpen, setAssignOpen] = useState(false)
   const [createIncidentOpen, setCreateIncidentOpen] = useState(false)
+
+  // Sync local UI state whenever a new alert/detail finishes loading.
+  useEffect(() => {
+    setStatus(alert?.status)
+  }, [alert])
+
+  useEffect(() => {
+    setAssignedEngineer(detail?.acknowledgedBy ?? null)
+  }, [detail])
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">
+        Loading alert details…
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">{error}</div>
+  }
 
   if (!alert || !detail || !status) {
     return (
