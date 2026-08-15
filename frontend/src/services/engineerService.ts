@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../config/api'
+
 let engineerRosterPromise: Promise<string[]> | null = null
 
 export function getAssignedEngineers(forceRefresh = false): Promise<string[]> {
@@ -6,7 +8,7 @@ export function getAssignedEngineers(forceRefresh = false): Promise<string[]> {
   }
 
   if (!engineerRosterPromise) {
-    engineerRosterPromise = fetch('/api/engineers')
+    engineerRosterPromise = fetch(`${API_BASE_URL}/api/engineers`)
       .then(async (response) => {
         if (!response.ok) {
           throw new Error('Unable to load engineers from the backend.')

@@ -12,6 +12,7 @@
 import type { IncidentItem, NewIncidentInput } from '../types/incident'
 import { getAllServers, loadServerCache } from './serverService'
 import { incidentAffectedSystems, incidentsData, systemLabelsForServers } from '../data/incidents'
+import { API_BASE_URL } from '../config/api'
 
 interface BackendIncidentResponse {
   id: string
@@ -106,7 +107,7 @@ export async function loadIncidentCache(forceRefresh = false): Promise<IncidentI
 
   if (!incidentCachePromise) {
     console.debug('[incidentService] loadIncidentCache: fetching /api/incidents')
-    incidentCachePromise = fetch('/api/incidents')
+    incidentCachePromise = fetch(`${API_BASE_URL}/api/incidents`)
       .then(async (response) => {
         console.debug('[incidentService] loadIncidentCache: response', response.status, response.headers.get('content-type'))
         if (!response.ok) {
@@ -138,7 +139,7 @@ export async function loadIncidentCache(forceRefresh = false): Promise<IncidentI
 
 export async function loadIncidentById(id: string): Promise<IncidentItem> {
   console.debug(`[incidentService] loadIncidentById: fetching /api/incidents/${id}`)
-  const response = await fetch(`/api/incidents/${encodeURIComponent(id)}`)
+  const response = await fetch(`${API_BASE_URL}/api/incidents/${encodeURIComponent(id)}`)
   console.debug('[incidentService] loadIncidentById: response', response.status, response.headers.get('content-type'))
 
   if (!response.ok) {
