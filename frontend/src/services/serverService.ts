@@ -7,6 +7,7 @@
  */
 
 import type { ServerItem } from '../types/server'
+import { API_BASE_URL } from '../config/api'
 
 interface BackendServerResponse {
   id: string
@@ -52,7 +53,7 @@ export async function loadServerCache(forceRefresh = false): Promise<ServerItem[
   }
 
   if (!serverCachePromise) {
-    serverCachePromise = fetch('/api/servers')
+    serverCachePromise = fetch(`${API_BASE_URL}/api/servers`)
       .then(async (response) => {
         if (!response.ok) {
           throw new Error('Unable to load servers from the backend.')
@@ -74,7 +75,7 @@ export async function loadServerCache(forceRefresh = false): Promise<ServerItem[
 }
 
 export async function loadServerById(id: string): Promise<ServerItem> {
-  const response = await fetch(`/api/servers/${encodeURIComponent(id)}`)
+  const response = await fetch(`${API_BASE_URL}/api/servers/${encodeURIComponent(id)}`)
 
   if (!response.ok) {
     throw new Error('Unable to load the requested server from the backend.')
