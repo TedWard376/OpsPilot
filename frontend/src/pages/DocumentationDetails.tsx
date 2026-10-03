@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { getDocById, getDocDetail } from '../services/documentationService'
+import { loadDocById, getDocDetail } from '../services/documentationService'
+import type { DocItem } from '../types/documentation'
 import { DocDetailHeader } from '../components/documentation/detail/DocDetailHeader'
 import { DocContentSection } from '../components/documentation/detail/DocContentSection'
 import { RelatedServersPanel } from '../components/documentation/detail/RelatedServersPanel'
@@ -13,11 +14,65 @@ import { AIAssistantPanel } from '../components/documentation/detail/AIAssistant
 function DocumentationDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const doc = id ? getDocById(id) : undefined
 
-  // In production this becomes `useDocDetail(id)` backed by
-  // `GET /api/docs/{id}/detail`.
+  const [doc, setDoc] = useState<DocItem | undefined>(undefined)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadDoc() {
+      if (!id) {
+        if (!cancelled) {
+          setDoc(undefined)
+          setLoading(false)
+        }
+        return
+      }
+
+      try {
+        setLoading(true)
+        const result = await loadDocById(id)
+
+        if (!cancelled) {
+          setDoc(result)
+          setError(null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load document details.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadDoc()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id])
+
+  // The backend doesn't yet expose a `/documentation/{id}/detail`
+  // endpoint, so related servers/alerts/incidents/docs and the AI
+  // Assistant placeholder are still derived client-side.
   const detail = useMemo(() => (doc ? getDocDetail(doc) : undefined), [doc])
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">
+        Loading document details…
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">{error}</div>
+  }
 
   if (!doc || !detail) {
     return (

@@ -1,9 +1,9 @@
 import type { AlertSeverity } from './alert'
 import type { IncidentPriority, IncidentStatus } from './incident'
 
-export type DocType = 'Runbook' | 'Playbook' | 'Guide' | 'Reference'
+export type DocType = 'Runbook' | 'Troubleshooting Guide' | 'Procedure' | 'Reference' | 'Policy'
 
-export type DocCategory = 'Compute' | 'Database' | 'Networking' | 'Security' | 'Storage' | 'Monitoring'
+export type DocCategory = 'Infrastructure' | 'Networking' | 'VMware' | 'Azure' | 'Backup' | 'Security' | 'Incident Response' | 'Troubleshooting'
 
 /** A single catalog entry — what renders on the Documentation list page. */
 export interface DocItem {

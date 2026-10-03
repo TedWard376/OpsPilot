@@ -6,9 +6,10 @@ interface DocTypeBadgeProps {
 
 const typeStyles: Record<DocType, string> = {
   Runbook: 'bg-blue-50 text-blue-700',
-  Playbook: 'bg-purple-50 text-purple-700',
-  Guide: 'bg-green-50 text-green-700',
+  'Troubleshooting Guide': 'bg-purple-50 text-purple-700',
+  Procedure: 'bg-green-50 text-green-700',
   Reference: 'bg-slate-100 text-slate-700',
+  Policy: 'bg-amber-50 text-amber-700',
 }
 
 export function DocTypeBadge({ type }: DocTypeBadgeProps) {
